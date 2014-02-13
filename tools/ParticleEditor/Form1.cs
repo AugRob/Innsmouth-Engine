@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006-2010 - Frictional Games
- *
+ * This is cool
  * This file is part of HPL1 Engine.
  *
  * HPL1 Engine is free software: you can redistribute it and/or modify
@@ -15,6 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with HPL1 Engine.  If not, see <http://www.gnu.org/licenses/>.
+ *OH OH OH OH OH
  */
 using System;
 using System.Drawing;
