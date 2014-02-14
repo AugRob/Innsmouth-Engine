@@ -1,15 +1,7 @@
-HPL1 Engine Source Code
-=======================
+Innsmouth Engine
+================
 
-Yes, here it is at last the Engine that made the Penumbra Series.
-
-Read through the TODO file for various known things that should be cleaned up / fixed.
-
-Included are project files for Xcode, Visual Studio 2003 and Cmake (for Linux)
-
-Contributing Code
------------------
-We encourage everyone to contribute code to this project, so just sign up for a github account, create a fork and hack away at the codebase. We will start an Open Source forum on the Frictional Games forums as a place to talk about changes and to submit patches from your forks.
+I endeavor to turn this fork of Fritional Games' HPL1 Engine into a smooth and up-to-date game engine to use for personal projects as well as, of course, for others to use however they please (within the confines of the licenses).
 
 
 License Information
