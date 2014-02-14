@@ -1,7 +1,7 @@
 Innsmouth Engine
 ================
 
-I endeavor to turn this fork of Fritional Games' HPL1 Engine into a smooth and up-to-date game engine to use for personal projects as well as, of course, for others to use however they please (within the confines of the licenses).
+I endeavour to turn this fork of Fritional Games' HPL1 Engine into a smooth and up-to-date game engine to use for personal projects as well as, of course, for others to use however they please (within the confines of the licenses).
 
 
 License Information
