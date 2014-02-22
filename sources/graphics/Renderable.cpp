@@ -23,136 +23,137 @@
 #include "system/LowLevelSystem.h"
 #include "graphics/RenderList.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	iRenderable::iRenderable(const tString &asName) : iEntity3D(asName)
-	{
-		mbRendered = true;
-		mlLastMatrixCount = -1;
+//-----------------------------------------------------------------------
 
-		mbStatic = false;
+iRenderable::iRenderable(const tString &asName) : iEntity3D(asName)
+{
+    mbRendered = true;
+    mlLastMatrixCount = -1;
 
-		mlRenderCount = -1;
-		mlPrevRenderCount = -1;
+    mbStatic = false;
 
-		mlCalcScaleMatrixCount = -1;
-		mvCalcScale = cVector3f(1,1,1);
+    mlRenderCount = -1;
+    mlPrevRenderCount = -1;
 
-		mbForceShadow = false;
+    mlCalcScaleMatrixCount = -1;
+    mvCalcScale = cVector3f(1,1,1);
 
-		mbIsOneSided = false;
-		mvOneSidedNormal =0;
-	}
+    mbForceShadow = false;
 
-	//-----------------------------------------------------------------------
+    mbIsOneSided = false;
+    mvOneSidedNormal =0;
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-	
-	cMatrixf* iRenderable::GetInvModelMatrix()
-	{
-		cMatrixf *pModelMatrix = GetModelMatrix(NULL);
-		if(pModelMatrix==NULL) return NULL;
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-		if(mlLastMatrixCount != GetMatrixUpdateCount())
-		{
-			mlLastMatrixCount = GetMatrixUpdateCount();
-						
-			m_mtxInvModel = cMath::MatrixInverse(*pModelMatrix);
-		}
-		
-		return &m_mtxInvModel;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-	
-	const cVector3f& iRenderable::GetCalcScale()
-	{
-		cMatrixf *pModelMatrix = GetModelMatrix(NULL);
-		
-		if(pModelMatrix != NULL && mlCalcScaleMatrixCount != GetMatrixUpdateCount())
-		{
-			mlCalcScaleMatrixCount = GetMatrixUpdateCount();
-			mvCalcScale.x = pModelMatrix->GetRight().Length();
-			mvCalcScale.y = pModelMatrix->GetUp().Length();
-			mvCalcScale.z = pModelMatrix->GetForward().Length();
-		}
+cMatrixf* iRenderable::GetInvModelMatrix()
+{
+    cMatrixf *pModelMatrix = GetModelMatrix(NULL);
+    if(pModelMatrix==NULL) return NULL;
 
-		return mvCalcScale;
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	bool iRenderable::CollidesWithBV(cBoundingVolume *apBV)
-	{
-		return cMath::CheckCollisionBV(*GetBoundingVolume(), *apBV);
-	}
-	
-	//-----------------------------------------------------------------------
+    if(mlLastMatrixCount != GetMatrixUpdateCount())
+        {
+            mlLastMatrixCount = GetMatrixUpdateCount();
 
-	bool iRenderable::CollidesWithFrustum(cFrustum *apFrustum)
-	{
-		return apFrustum->CollideBoundingVolume(GetBoundingVolume()) != eFrustumCollision_Outside; 
-	}
-	
-	//-----------------------------------------------------------------------
+            m_mtxInvModel = cMath::MatrixInverse(*pModelMatrix);
+        }
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE OBJECT STUFF
-	//////////////////////////////////////////////////////////////////////////
+    return &m_mtxInvModel;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	kBeginSerializeVirtual(cSaveData_iRenderable,cSaveData_iEntity3D)
-	kSerializeVar(mbStatic, eSerializeType_Bool)
-	kSerializeVar(mbRendered, eSerializeType_Bool)
-	kSerializeVar(mfZ, eSerializeType_Float32)
-	kEndSerialize()
+const cVector3f& iRenderable::GetCalcScale()
+{
+    cMatrixf *pModelMatrix = GetModelMatrix(NULL);
 
-	//-----------------------------------------------------------------------
+    if(pModelMatrix != NULL && mlCalcScaleMatrixCount != GetMatrixUpdateCount())
+        {
+            mlCalcScaleMatrixCount = GetMatrixUpdateCount();
+            mvCalcScale.x = pModelMatrix->GetRight().Length();
+            mvCalcScale.y = pModelMatrix->GetUp().Length();
+            mvCalcScale.z = pModelMatrix->GetForward().Length();
+        }
 
-	iSaveData* iRenderable::CreateSaveData()
-	{
-		return NULL;
-	}
+    return mvCalcScale;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iRenderable::SaveToSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_SaveToBegin(iRenderable);
+bool iRenderable::CollidesWithBV(cBoundingVolume *apBV)
+{
+    return cMath::CheckCollisionBV(*GetBoundingVolume(), *apBV);
+}
 
-		kSaveData_SaveTo(mbStatic);
-		kSaveData_SaveTo(mbRendered);
-		kSaveData_SaveTo(mfZ);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool iRenderable::CollidesWithFrustum(cFrustum *apFrustum)
+{
+    return apFrustum->CollideBoundingVolume(GetBoundingVolume()) != eFrustumCollision_Outside;
+}
 
-	void iRenderable::LoadFromSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_LoadFromBegin(iRenderable);
+//-----------------------------------------------------------------------
 
-		kSaveData_LoadFrom(mbStatic);
-		kSaveData_LoadFrom(mbRendered);
-		kSaveData_LoadFrom(mfZ);
-	}
+//////////////////////////////////////////////////////////////////////////
+// SAVE OBJECT STUFF
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iRenderable::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
-	{
-		kSaveData_SetupBegin(iRenderable);
-	}
+kBeginSerializeVirtual(cSaveData_iRenderable,cSaveData_iEntity3D)
+kSerializeVar(mbStatic, eSerializeType_Bool)
+kSerializeVar(mbRendered, eSerializeType_Bool)
+kSerializeVar(mfZ, eSerializeType_Float32)
+kEndSerialize()
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+iSaveData* iRenderable::CreateSaveData()
+{
+    return NULL;
+}
+
+//-----------------------------------------------------------------------
+
+void iRenderable::SaveToSaveData(iSaveData *apSaveData)
+{
+    kSaveData_SaveToBegin(iRenderable);
+
+    kSaveData_SaveTo(mbStatic);
+    kSaveData_SaveTo(mbRendered);
+    kSaveData_SaveTo(mfZ);
+}
+
+//-----------------------------------------------------------------------
+
+void iRenderable::LoadFromSaveData(iSaveData *apSaveData)
+{
+    kSaveData_LoadFromBegin(iRenderable);
+
+    kSaveData_LoadFrom(mbStatic);
+    kSaveData_LoadFrom(mbRendered);
+    kSaveData_LoadFrom(mfZ);
+}
+
+//-----------------------------------------------------------------------
+
+void iRenderable::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
+{
+    kSaveData_SetupBegin(iRenderable);
+}
+
+//-----------------------------------------------------------------------
 }

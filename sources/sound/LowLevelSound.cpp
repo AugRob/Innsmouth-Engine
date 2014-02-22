@@ -20,57 +20,58 @@
 
 #include "sound/SoundEnvironment.h"
 
-namespace hpl {
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+namespace hpl
+{
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iLowLevelSound::iLowLevelSound()
-	{
-		mfVolume=1;
-		mfEnvVolume=0;
-		mbListenerAttenuation=true;
-		mbHardwareAcc = false;
-		mbEnvAudioEnabled = false;
-	}
+iLowLevelSound::iLowLevelSound()
+{
+    mfVolume=1;
+    mfEnvVolume=0;
+    mbListenerAttenuation=true;
+    mbHardwareAcc = false;
+    mbEnvAudioEnabled = false;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iLowLevelSound::~iLowLevelSound()
-	{
-		STLDeleteAll(mlstSoundEnv);
-	}
+iLowLevelSound::~iLowLevelSound()
+{
+    STLDeleteAll(mlstSoundEnv);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iSoundEnvironment* iLowLevelSound::GetSoundEnvironmentFromFileName (const tString& asName)
-	{
-		tString sLowName = cString::ToLowerCase(asName);
-		for (tSoundEnvListIt SEIt = mlstSoundEnv.begin(); SEIt != mlstSoundEnv.end(); ++SEIt)
-		{
-			iSoundEnvironment* pSoundEnv = *SEIt;
+iSoundEnvironment* iLowLevelSound::GetSoundEnvironmentFromFileName (const tString& asName)
+{
+    tString sLowName = cString::ToLowerCase(asName);
+    for (tSoundEnvListIt SEIt = mlstSoundEnv.begin(); SEIt != mlstSoundEnv.end(); ++SEIt)
+        {
+            iSoundEnvironment* pSoundEnv = *SEIt;
 
-			if(sLowName == pSoundEnv->GetFileName()) return pSoundEnv;
-		}
-		return NULL;
-	}
+            if(sLowName == pSoundEnv->GetFileName()) return pSoundEnv;
+        }
+    return NULL;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	/*void iLowLevelSound::DestroySoundEnvironment( iSoundEnvironment* apSoundEnv) 
-	{ 
-		Log(" Destroy %d\n",apSoundEnv);
+/*void iLowLevelSound::DestroySoundEnvironment( iSoundEnvironment* apSoundEnv)
+{
+	Log(" Destroy %d\n",apSoundEnv);
 
-		STLFindAndDelete(mlstSoundEnv,apSoundEnv);
-	}*/
+	STLFindAndDelete(mlstSoundEnv,apSoundEnv);
+}*/
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 }

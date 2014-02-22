@@ -21,51 +21,52 @@
 #include "graphics/Material.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cGfxObject::cGfxObject(iMaterial* apMat,const tString& asFile, bool abIsImage)
-	{
-		mpMat = apMat;
+cGfxObject::cGfxObject(iMaterial* apMat,const tString& asFile, bool abIsImage)
+{
+    mpMat = apMat;
 
-		msSourceFile = asFile;
+    msSourceFile = asFile;
 
-		mbIsImage = abIsImage;
-	
-		if(mbIsImage)
-		{
-			mvVtx = apMat->GetImage(eMaterialTexture_Diffuse)->GetVertexVecCopy(0,-1);
-		}
-		else
-		{
-			mvVtx.push_back(cVertex(cVector3f(0,0,0),cVector2f(0,0),cColor(1,1)) );
-			mvVtx.push_back(cVertex(cVector3f(1,0,0),cVector2f(1,0),cColor(1,1)) );
-			mvVtx.push_back(cVertex(cVector3f(1,1,0),cVector2f(1,1),cColor(1,1)) );
-			mvVtx.push_back(cVertex(cVector3f(0,1,0),cVector2f(0,1),cColor(1,1)) );
-		}
-	}
+    mbIsImage = abIsImage;
 
-	//-----------------------------------------------------------------------
+    if(mbIsImage)
+        {
+            mvVtx = apMat->GetImage(eMaterialTexture_Diffuse)->GetVertexVecCopy(0,-1);
+        }
+    else
+        {
+            mvVtx.push_back(cVertex(cVector3f(0,0,0),cVector2f(0,0),cColor(1,1)) );
+            mvVtx.push_back(cVertex(cVector3f(1,0,0),cVector2f(1,0),cColor(1,1)) );
+            mvVtx.push_back(cVertex(cVector3f(1,1,0),cVector2f(1,1),cColor(1,1)) );
+            mvVtx.push_back(cVertex(cVector3f(0,1,0),cVector2f(0,1),cColor(1,1)) );
+        }
+}
 
-	cGfxObject::~cGfxObject()
-	{
-		hplDelete(mpMat);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+cGfxObject::~cGfxObject()
+{
+    hplDelete(mpMat);
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-		
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
 
 }

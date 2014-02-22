@@ -23,74 +23,75 @@
 
 #include "system/LowLevelSystem.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cLowLevelInputSDL::cLowLevelInputSDL(iLowLevelGraphics *apLowLevelGraphics)
-	{
-		mpLowLevelGraphics = apLowLevelGraphics;
-		LockInput(true);
-	}
+cLowLevelInputSDL::cLowLevelInputSDL(iLowLevelGraphics *apLowLevelGraphics)
+{
+    mpLowLevelGraphics = apLowLevelGraphics;
+    LockInput(true);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cLowLevelInputSDL::~cLowLevelInputSDL()
-	{
-	}
+cLowLevelInputSDL::~cLowLevelInputSDL()
+{
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHOD
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHOD
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	void cLowLevelInputSDL::LockInput(bool abX)
-	{
-		SDL_WM_GrabInput(abX ? SDL_GRAB_ON : SDL_GRAB_OFF);
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cLowLevelInputSDL::BeginInputUpdate()
-	{
-		//SDL_PumpEvents();
+void cLowLevelInputSDL::LockInput(bool abX)
+{
+    SDL_WM_GrabInput(abX ? SDL_GRAB_ON : SDL_GRAB_OFF);
+}
 
-		SDL_Event sdlEvent;
+//-----------------------------------------------------------------------
 
-		while(SDL_PollEvent(&sdlEvent)!=0)
-		{
-			mlstEvents.push_back(sdlEvent);
-		}
-	}
-	
-	//-----------------------------------------------------------------------
+void cLowLevelInputSDL::BeginInputUpdate()
+{
+    //SDL_PumpEvents();
 
-	void cLowLevelInputSDL::EndInputUpdate()
-	{
-		mlstEvents.clear();
-	}
+    SDL_Event sdlEvent;
 
-	//-----------------------------------------------------------------------
-	
-	iMouse* cLowLevelInputSDL::CreateMouse()
-	{
-		return hplNew( cMouseSDL,(this,mpLowLevelGraphics));
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	iKeyboard* cLowLevelInputSDL::CreateKeyboard()
-	{
-		return hplNew( cKeyboardSDL,(this) );
-	}
-	
-	//-----------------------------------------------------------------------
+    while(SDL_PollEvent(&sdlEvent)!=0)
+        {
+            mlstEvents.push_back(sdlEvent);
+        }
+}
+
+//-----------------------------------------------------------------------
+
+void cLowLevelInputSDL::EndInputUpdate()
+{
+    mlstEvents.clear();
+}
+
+//-----------------------------------------------------------------------
+
+iMouse* cLowLevelInputSDL::CreateMouse()
+{
+    return hplNew( cMouseSDL,(this,mpLowLevelGraphics));
+}
+
+//-----------------------------------------------------------------------
+
+iKeyboard* cLowLevelInputSDL::CreateKeyboard()
+{
+    return hplNew( cKeyboardSDL,(this) );
+}
+
+//-----------------------------------------------------------------------
 
 }

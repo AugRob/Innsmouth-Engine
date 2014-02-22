@@ -23,54 +23,58 @@
 
 namespace hpl
 {
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cActionHaptic::cActionHaptic(tString asName,cHaptic *apHaptic, int alButton) : iAction(asName)
-	{
-		mlButton = alButton;	
-		mpHaptic = apHaptic;
-	}
+cActionHaptic::cActionHaptic(tString asName,cHaptic *apHaptic, int alButton) : iAction(asName)
+{
+    mlButton = alButton;
+    mpHaptic = apHaptic;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cActionHaptic::IsTriggerd()
-	{
-		if(mlButton >= mpHaptic->GetLowLevel()->GetNumberOfButtons()) return false;
+bool cActionHaptic::IsTriggerd()
+{
+    if(mlButton >= mpHaptic->GetLowLevel()->GetNumberOfButtons()) return false;
 
-		return mpHaptic->GetLowLevel()->ButtonIsPressed(mlButton);
-	}
+    return mpHaptic->GetLowLevel()->ButtonIsPressed(mlButton);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	float cActionHaptic::GetValue()
-	{
-		if(IsTriggerd())return 1.0;
-		else return 0.0;
-	}
+float cActionHaptic::GetValue()
+{
+    if(IsTriggerd())return 1.0;
+    else return 0.0;
+}
 
-	//-----------------------------------------------------------------------
-	
-	tString cActionHaptic::GetInputName()
-	{
-		switch(mlButton)
-		{
-		case 0: return "centre Controller button";
-		case 1: return "left Controller button";
-		case 2: return "forward Controller button";
-		case 3: return "right Controller button";
-		}
-		return "unknown Controller button";
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+tString cActionHaptic::GetInputName()
+{
+    switch(mlButton)
+        {
+        case 0:
+            return "centre Controller button";
+        case 1:
+            return "left Controller button";
+        case 2:
+            return "forward Controller button";
+        case 3:
+            return "right Controller button";
+        }
+    return "unknown Controller button";
+}
+
+//-----------------------------------------------------------------------
 }

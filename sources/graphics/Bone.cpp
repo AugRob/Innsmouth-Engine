@@ -24,146 +24,147 @@
 #include "system/LowLevelSystem.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cBone::cBone(const tString &asName, cSkeleton* apSkeleton)
-	{
-		msName = asName;
-		mpSkeleton = apSkeleton;
-		mpParent = NULL;
+cBone::cBone(const tString &asName, cSkeleton* apSkeleton)
+{
+    msName = asName;
+    mpSkeleton = apSkeleton;
+    mpParent = NULL;
 
-		mbNeedsUpdate = true;
+    mbNeedsUpdate = true;
 
-		mlValue = 0;
-	}
+    mlValue = 0;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cBone::~cBone()
-	{
-		STLDeleteAll(mlstChildren);
-	}
+cBone::~cBone()
+{
+    STLDeleteAll(mlstChildren);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	cBone* cBone::CreateChildBone(const tString &asName)
-	{
-		cBone *pBone = hplNew(cBone,(asName, mpSkeleton) );
-		pBone->mpParent = this;
-		
-		mlstChildren.push_back(pBone);
-		mpSkeleton->AddBone(pBone);
+//-----------------------------------------------------------------------
 
-		return pBone;
-	}
+cBone* cBone::CreateChildBone(const tString &asName)
+{
+    cBone *pBone = hplNew(cBone,(asName, mpSkeleton) );
+    pBone->mpParent = this;
 
-	//-----------------------------------------------------------------------
+    mlstChildren.push_back(pBone);
+    mpSkeleton->AddBone(pBone);
 
-	void cBone::SetTransform(const cMatrixf &a_mtxTransform)
-	{
-		m_mtxTransform = a_mtxTransform;
+    return pBone;
+}
 
-		NeedsUpdate();
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	const cMatrixf& cBone::GetLocalTransform()
-	{
-		return m_mtxTransform;
-	}
+void cBone::SetTransform(const cMatrixf &a_mtxTransform)
+{
+    m_mtxTransform = a_mtxTransform;
 
-	const cMatrixf& cBone::GetWorldTransform()
-	{
-		UpdateMatrix();
-		
-        return m_mtxWorldTransform;
-	}
+    NeedsUpdate();
+}
 
-	const cMatrixf& cBone::GetInvWorldTransform()
-	{
-		UpdateMatrix();
+//-----------------------------------------------------------------------
 
-		return m_mtxInvWorldTransform;
-	}
+const cMatrixf& cBone::GetLocalTransform()
+{
+    return m_mtxTransform;
+}
 
-	//-----------------------------------------------------------------------
+const cMatrixf& cBone::GetWorldTransform()
+{
+    UpdateMatrix();
 
-	void cBone::Detach()
-	{
-		if(mpParent == NULL) return;
-		
-        tBoneListIt it = mpParent->mlstChildren.begin();
-		for(;it != mpParent->mlstChildren.end(); it++)
-		{
-			if(*it == this)
-			{
-				mpParent->mlstChildren.erase(it);
-				break;
-			}
-		}
+    return m_mtxWorldTransform;
+}
 
-		mpSkeleton->RemoveBone(this);
-	}
+const cMatrixf& cBone::GetInvWorldTransform()
+{
+    UpdateMatrix();
 
-	//-----------------------------------------------------------------------
+    return m_mtxInvWorldTransform;
+}
 
-	cBoneIterator cBone::GetChildIterator()
-	{
-		return cBoneIterator(&mlstChildren);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cBone::Detach()
+{
+    if(mpParent == NULL) return;
 
-	void cBone::UpdateMatrix()
-	{
-		if(mbNeedsUpdate == false) return;
+    tBoneListIt it = mpParent->mlstChildren.begin();
+    for(; it != mpParent->mlstChildren.end(); it++)
+        {
+            if(*it == this)
+                {
+                    mpParent->mlstChildren.erase(it);
+                    break;
+                }
+        }
 
-		if(mpParent==NULL)
-		{
-			m_mtxWorldTransform = m_mtxTransform;
-		}
-		else
-		{
-			m_mtxWorldTransform = cMath::MatrixMul(mpParent->GetWorldTransform(),m_mtxTransform);
-		}
+    mpSkeleton->RemoveBone(this);
+}
 
-		m_mtxInvWorldTransform = cMath::MatrixInverse(m_mtxWorldTransform);
+//-----------------------------------------------------------------------
 
-		mbNeedsUpdate = false;
-	}
+cBoneIterator cBone::GetChildIterator()
+{
+    return cBoneIterator(&mlstChildren);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
+void cBone::UpdateMatrix()
+{
+    if(mbNeedsUpdate == false) return;
 
-	//-----------------------------------------------------------------------
-	
-	void cBone::NeedsUpdate()
-	{
-		mbNeedsUpdate = true;
+    if(mpParent==NULL)
+        {
+            m_mtxWorldTransform = m_mtxTransform;
+        }
+    else
+        {
+            m_mtxWorldTransform = cMath::MatrixMul(mpParent->GetWorldTransform(),m_mtxTransform);
+        }
 
-		tBoneListIt it = mlstChildren.begin();
-		for(;it != mlstChildren.end(); it++)
-		{
-			cBone* pBone = *it;
+    m_mtxInvWorldTransform = cMath::MatrixInverse(m_mtxWorldTransform);
 
-			pBone->NeedsUpdate();
-		}
-	}
-	//-----------------------------------------------------------------------
+    mbNeedsUpdate = false;
+}
+
+//-----------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
+
+void cBone::NeedsUpdate()
+{
+    mbNeedsUpdate = true;
+
+    tBoneListIt it = mlstChildren.begin();
+    for(; it != mlstChildren.end(); it++)
+        {
+            cBone* pBone = *it;
+
+            pBone->NeedsUpdate();
+        }
+}
+//-----------------------------------------------------------------------
 }

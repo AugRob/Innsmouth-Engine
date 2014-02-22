@@ -27,142 +27,146 @@
 #include "resources/FileSearcher.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cAnimationManager::cAnimationManager(cGraphics* apGraphic,cResources *apResources)
-		: iResourceManager(apResources->GetFileSearcher(), apResources->GetLowLevel(),
-							apResources->GetLowLevelSystem())
-	{
-		mpGraphics = apGraphic;
-		mpResources = apResources;
-	}
+cAnimationManager::cAnimationManager(cGraphics* apGraphic,cResources *apResources)
+    : iResourceManager(apResources->GetFileSearcher(), apResources->GetLowLevel(),
+                       apResources->GetLowLevelSystem())
+{
+    mpGraphics = apGraphic;
+    mpResources = apResources;
+}
 
-	cAnimationManager::~cAnimationManager()
-	{
-		DestroyAll();
+cAnimationManager::~cAnimationManager()
+{
+    DestroyAll();
 
-		Log(" Done with animations\n");
-	}
+    Log(" Done with animations\n");
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cAnimation* cAnimationManager::CreateAnimation(const tString& asName)
-	{
-		tString sPath;
-		cAnimation *pAnimation=NULL;
-		tString asNewName;
+cAnimation* cAnimationManager::CreateAnimation(const tString& asName)
+{
+    tString sPath;
+    cAnimation *pAnimation=NULL;
+    tString asNewName;
 
-		BeginLoad(asName);
+    BeginLoad(asName);
 
-		asNewName = asName;
-		
-		//If the file is missing an extension, search for an existing file.
-		if(cString::GetFileExt(asNewName) == "")
-		{
-			bool bFound = false;
-			tStringVec *pTypes = mpResources->GetMeshLoaderHandler()->GetSupportedTypes();
-			for(size_t i=0; i< pTypes->size(); i++)
-			{
-				asNewName = cString::SetFileExt(asNewName, (*pTypes)[i]);
-				sPath = mpResources->GetFileSearcher()->GetFilePath(asNewName);
-				if(sPath != "")
-				{
-					bFound = true;
-					break;
-				}
-			}
+    asNewName = asName;
 
-			if(bFound == false){
-				Error("Couldn't create mesh '%s'\n",asName.c_str());
-				EndLoad();
-				return NULL;
-			}
-		}
+    //If the file is missing an extension, search for an existing file.
+    if(cString::GetFileExt(asNewName) == "")
+        {
+            bool bFound = false;
+            tStringVec *pTypes = mpResources->GetMeshLoaderHandler()->GetSupportedTypes();
+            for(size_t i=0; i< pTypes->size(); i++)
+                {
+                    asNewName = cString::SetFileExt(asNewName, (*pTypes)[i]);
+                    sPath = mpResources->GetFileSearcher()->GetFilePath(asNewName);
+                    if(sPath != "")
+                        {
+                            bFound = true;
+                            break;
+                        }
+                }
 
-		pAnimation = static_cast<cAnimation*>(this->FindLoadedResource(asNewName,sPath));
+            if(bFound == false)
+                {
+                    Error("Couldn't create mesh '%s'\n",asName.c_str());
+                    EndLoad();
+                    return NULL;
+                }
+        }
 
-		if(pAnimation==NULL && sPath!="")
-		{
-			cMeshLoaderHandler *pMeshLoadHandler = mpResources->GetMeshLoaderHandler();
-			
-			//try to load animation from mesh
-			cMesh *pTempMesh = pMeshLoadHandler->LoadMesh(sPath,0);
-			if(pTempMesh==NULL){
-				Error("Couldn't load animation from '%s'\n",sPath.c_str());
-				EndLoad();
-				return NULL;
-			}
+    pAnimation = static_cast<cAnimation*>(this->FindLoadedResource(asNewName,sPath));
 
-			if(pTempMesh->GetAnimationNum()<=0)
-			{
-				Error("No animations found in '%s'\n",sPath.c_str());
-				hplDelete(pTempMesh);
-				EndLoad();
-				return NULL;
-			}
+    if(pAnimation==NULL && sPath!="")
+        {
+            cMeshLoaderHandler *pMeshLoadHandler = mpResources->GetMeshLoaderHandler();
 
-			pAnimation = pTempMesh->GetAnimation(0);
-			pTempMesh->ClearAnimations(false);
+            //try to load animation from mesh
+            cMesh *pTempMesh = pMeshLoadHandler->LoadMesh(sPath,0);
+            if(pTempMesh==NULL)
+                {
+                    Error("Couldn't load animation from '%s'\n",sPath.c_str());
+                    EndLoad();
+                    return NULL;
+                }
 
-			hplDelete(pTempMesh);
-			
-			AddResource(pAnimation);
-		}
+            if(pTempMesh->GetAnimationNum()<=0)
+                {
+                    Error("No animations found in '%s'\n",sPath.c_str());
+                    hplDelete(pTempMesh);
+                    EndLoad();
+                    return NULL;
+                }
 
-		if(pAnimation) pAnimation->IncUserCount();
-		else Error("Couldn't create animation '%s'\n",asNewName.c_str());
-		
-		EndLoad();
-		return pAnimation;
-	}
+            pAnimation = pTempMesh->GetAnimation(0);
+            pTempMesh->ClearAnimations(false);
 
-	//-----------------------------------------------------------------------
+            hplDelete(pTempMesh);
 
-	iResourceBase* cAnimationManager::Create(const tString& asName)
-	{
-		return CreateAnimation(asName);
-	}
+            AddResource(pAnimation);
+        }
 
-	//-----------------------------------------------------------------------
+    if(pAnimation) pAnimation->IncUserCount();
+    else Error("Couldn't create animation '%s'\n",asNewName.c_str());
 
-	void cAnimationManager::Unload(iResourceBase* apResource)
-	{
+    EndLoad();
+    return pAnimation;
+}
 
-	}
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cAnimationManager::Destroy(iResourceBase* apResource)
-	{
-		apResource->DecUserCount();
+iResourceBase* cAnimationManager::Create(const tString& asName)
+{
+    return CreateAnimation(asName);
+}
 
-		if(apResource->HasUsers()==false){
-			RemoveResource(apResource);
-			hplDelete(apResource);
-		}
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cAnimationManager::Unload(iResourceBase* apResource)
+{
 
-	//-----------------------------------------------------------------------
+}
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
+void cAnimationManager::Destroy(iResourceBase* apResource)
+{
+    apResource->DecUserCount();
 
-	//-----------------------------------------------------------------------
+    if(apResource->HasUsers()==false)
+        {
+            RemoveResource(apResource);
+            hplDelete(apResource);
+        }
+}
+
+//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
 
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 }

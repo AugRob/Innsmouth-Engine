@@ -32,419 +32,443 @@
 
 #include "math/Math.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMeshLoaderMSH::cMeshLoaderMSH(iLowLevelGraphics *apLowLevelGraphics) : iMeshLoader(apLowLevelGraphics)
-	{
+cMeshLoaderMSH::cMeshLoaderMSH(iLowLevelGraphics *apLowLevelGraphics) : iMeshLoader(apLowLevelGraphics)
+{
 
-	}
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMeshLoaderMSH::~cMeshLoaderMSH()
-	{
-	}
+cMeshLoaderMSH::~cMeshLoaderMSH()
+{
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//Definition to make the error exit not so bloated.
-	#define ExitLoad() hplDelete(pMesh); hplDelete(pXmlDoc); return NULL;
+//Definition to make the error exit not so bloated.
+#define ExitLoad() hplDelete(pMesh); hplDelete(pXmlDoc); return NULL;
 
-	cWorld3D* cMeshLoaderMSH::LoadWorld(const tString& asFile, cScene* apScene,tWorldLoadFlag aFlags)
-	{
-		return NULL;
-	}
+cWorld3D* cMeshLoaderMSH::LoadWorld(const tString& asFile, cScene* apScene,tWorldLoadFlag aFlags)
+{
+    return NULL;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMesh* cMeshLoaderMSH::LoadMesh(const tString& asFile,tMeshLoadFlag aFlags)
-	{
-		cMesh* pMesh = hplNew( cMesh, (cString::GetFileName(asFile),mpMaterialManager,mpAnimationManager) );
-		//If the mesh is animated there are some property differences, the vertex buffer
-		//Must be Stream instead of static for example.
-		bool bIsAnimated = false;
+cMesh* cMeshLoaderMSH::LoadMesh(const tString& asFile,tMeshLoadFlag aFlags)
+{
+    cMesh* pMesh = hplNew( cMesh, (cString::GetFileName(asFile),mpMaterialManager,mpAnimationManager) );
+    //If the mesh is animated there are some property differences, the vertex buffer
+    //Must be Stream instead of static for example.
+    bool bIsAnimated = false;
 
-		/////////////////////////////////////////////////
-		// LOAD THE DOCUMENT
-		TiXmlDocument* pXmlDoc = hplNew( TiXmlDocument, (asFile.c_str()) );
-		if(pXmlDoc->LoadFile()==false)
-		{
-			Error("Couldn't load XML file '%s'!\n",asFile.c_str());
-			ExitLoad();
-		}
+    /////////////////////////////////////////////////
+    // LOAD THE DOCUMENT
+    TiXmlDocument* pXmlDoc = hplNew( TiXmlDocument, (asFile.c_str()) );
+    if(pXmlDoc->LoadFile()==false)
+        {
+            Error("Couldn't load XML file '%s'!\n",asFile.c_str());
+            ExitLoad();
+        }
 
-		//Get the root.
-		TiXmlElement* pRootElem = pXmlDoc->RootElement();
-
-
-		/////////////////////////////////////////////////
-		// LOAD SUBMESHES
-		//Load the root
-		TiXmlElement* pSubMeshesRootElem = pRootElem->FirstChildElement("SubMeshes");
-		if(pSubMeshesRootElem ==NULL)
-		{
-			Error("No mesh data in XML file '%s'!\n",asFile.c_str());
-			ExitLoad();
-		}
-
-		//Iterate through the sub meshes
-		TiXmlElement* pSubMeshElem = pSubMeshesRootElem->FirstChildElement();
-		while(pSubMeshElem)
-		{
-			//////////////////
-			//Create sub mesh
-			cSubMesh *pSubMesh = pMesh->CreateSubMesh(pSubMeshElem->Attribute("name"));
-
-			//////////////////
-			//Set material
-			const char *pMatName = pSubMeshElem->Attribute("material");
-			if(pMatName==NULL){
-				Error("No material found for mesh '%s'\n",asFile.c_str());
-				ExitLoad();
-			}
-
-			iMaterial *pMaterial = mpMaterialManager->CreateMaterial(pMatName);
-			pSubMesh->SetMaterial(pMaterial);
+    //Get the root.
+    TiXmlElement* pRootElem = pXmlDoc->RootElement();
 
 
-			////////////////////
-			//Get the vertices
-			TiXmlElement* pVtxElem = pSubMeshElem->FirstChildElement("Vertices");
-			int lVtxSize = cString::ToInt(pVtxElem->Attribute("size"),0);
-			tVertexFlag vtxFlags =0;
-			bool bTangents = false;
+    /////////////////////////////////////////////////
+    // LOAD SUBMESHES
+    //Load the root
+    TiXmlElement* pSubMeshesRootElem = pRootElem->FirstChildElement("SubMeshes");
+    if(pSubMeshesRootElem ==NULL)
+        {
+            Error("No mesh data in XML file '%s'!\n",asFile.c_str());
+            ExitLoad();
+        }
 
-			//Check what type of vertices are included.
+    //Iterate through the sub meshes
+    TiXmlElement* pSubMeshElem = pSubMeshesRootElem->FirstChildElement();
+    while(pSubMeshElem)
+        {
+            //////////////////
+            //Create sub mesh
+            cSubMesh *pSubMesh = pMesh->CreateSubMesh(pSubMeshElem->Attribute("name"));
+
+            //////////////////
+            //Set material
+            const char *pMatName = pSubMeshElem->Attribute("material");
+            if(pMatName==NULL)
+                {
+                    Error("No material found for mesh '%s'\n",asFile.c_str());
+                    ExitLoad();
+                }
+
+            iMaterial *pMaterial = mpMaterialManager->CreateMaterial(pMatName);
+            pSubMesh->SetMaterial(pMaterial);
+
+
+            ////////////////////
+            //Get the vertices
+            TiXmlElement* pVtxElem = pSubMeshElem->FirstChildElement("Vertices");
+            int lVtxSize = cString::ToInt(pVtxElem->Attribute("size"),0);
+            tVertexFlag vtxFlags =0;
+            bool bTangents = false;
+
+            //Check what type of vertices are included.
             if(pVtxElem->FirstChild("Normal"))vtxFlags |= eVertexFlag_Normal;
-			if(pVtxElem->FirstChild("Position"))vtxFlags |= eVertexFlag_Position;
-			if(pVtxElem->FirstChild("Texture"))vtxFlags |= eVertexFlag_Texture0;
-			if(pVtxElem->FirstChild("Color"))vtxFlags |= eVertexFlag_Color0;
-			if(pVtxElem->FirstChild("Tangent")){
-				vtxFlags |= eVertexFlag_Texture1;
-				bTangents = true;
-			}
+            if(pVtxElem->FirstChild("Position"))vtxFlags |= eVertexFlag_Position;
+            if(pVtxElem->FirstChild("Texture"))vtxFlags |= eVertexFlag_Texture0;
+            if(pVtxElem->FirstChild("Color"))vtxFlags |= eVertexFlag_Color0;
+            if(pVtxElem->FirstChild("Tangent"))
+                {
+                    vtxFlags |= eVertexFlag_Texture1;
+                    bTangents = true;
+                }
 
-			//Create the vertex buffer
-			eVertexBufferUsageType usageType = bIsAnimated ? eVertexBufferUsageType_Stream : eVertexBufferUsageType_Static;
-			iVertexBuffer* pVtxBuff = mpLowLevelGraphics->CreateVertexBuffer(vtxFlags,
-							eVertexBufferDrawType_Tri,
-							usageType,
-							0,0);
+            //Create the vertex buffer
+            eVertexBufferUsageType usageType = bIsAnimated ? eVertexBufferUsageType_Stream : eVertexBufferUsageType_Static;
+            iVertexBuffer* pVtxBuff = mpLowLevelGraphics->CreateVertexBuffer(vtxFlags,
+                                      eVertexBufferDrawType_Tri,
+                                      usageType,
+                                      0,0);
 
-			pVtxBuff->SetTangents(bTangents);
+            pVtxBuff->SetTangents(bTangents);
 
-			//Fill the arrays
-			for(int i=0;i<klNumOfVertexFlags;i++)
-			{
-				if(kvVertexFlags[i] & vtxFlags)
-				{
-					int lElemPerVtx = 3;
-					if(kvVertexFlags[i] & eVertexFlag_Texture1 || kvVertexFlags[i] & eVertexFlag_Color0){
-						lElemPerVtx = 4;
-					}
+            //Fill the arrays
+            for(int i=0; i<klNumOfVertexFlags; i++)
+                {
+                    if(kvVertexFlags[i] & vtxFlags)
+                        {
+                            int lElemPerVtx = 3;
+                            if(kvVertexFlags[i] & eVertexFlag_Texture1 || kvVertexFlags[i] & eVertexFlag_Color0)
+                                {
+                                    lElemPerVtx = 4;
+                                }
 
-					TiXmlElement* pElem = pVtxElem->FirstChildElement(GetVertexName(kvVertexFlags[i]));
+                            TiXmlElement* pElem = pVtxElem->FirstChildElement(GetVertexName(kvVertexFlags[i]));
 
-					pVtxBuff->ResizeArray(kvVertexFlags[i],lVtxSize * lElemPerVtx);
-                    float *pArray = pVtxBuff->GetArray(kvVertexFlags[i]);
+                            pVtxBuff->ResizeArray(kvVertexFlags[i],lVtxSize * lElemPerVtx);
+                            float *pArray = pVtxBuff->GetArray(kvVertexFlags[i]);
 
-					//Log("TYPE: %s:\n",GetVertexName(kvVertexFlags[i]));
-                    FillVtxArray(pArray, pElem->Attribute("data"),lVtxSize * lElemPerVtx);
-				}
-			}
+                            //Log("TYPE: %s:\n",GetVertexName(kvVertexFlags[i]));
+                            FillVtxArray(pArray, pElem->Attribute("data"),lVtxSize * lElemPerVtx);
+                        }
+                }
 
-			////////////////////
-			//Get Indices
+            ////////////////////
+            //Get Indices
 
-			TiXmlElement* pIdxElem = pSubMeshElem->FirstChildElement("Indices");
-			int lIdxSize = cString::ToInt(pIdxElem->Attribute("size"),0);
+            TiXmlElement* pIdxElem = pSubMeshElem->FirstChildElement("Indices");
+            int lIdxSize = cString::ToInt(pIdxElem->Attribute("size"),0);
 
-			//Log("TYPE: Indices\n");
-			pVtxBuff->ResizeIndices(lIdxSize);
-			FillIdxArray(pVtxBuff->GetIndices(), pIdxElem->Attribute("data"),lIdxSize);
+            //Log("TYPE: Indices\n");
+            pVtxBuff->ResizeIndices(lIdxSize);
+            FillIdxArray(pVtxBuff->GetIndices(), pIdxElem->Attribute("data"),lIdxSize);
 
-			///////////////////
-			//Compile vertex buffer
-			pVtxBuff->Compile(0);
+            ///////////////////
+            //Compile vertex buffer
+            pVtxBuff->Compile(0);
 
-			pSubMesh->SetVertexBuffer(pVtxBuff);
-
-
-			/////////////////
-			//Next element
-			pSubMeshElem = pSubMeshesRootElem->NextSiblingElement();
-		}
-
-		/////////////////////////////////////////////////
-		// LOAD SKELETON
+            pSubMesh->SetVertexBuffer(pVtxBuff);
 
 
+            /////////////////
+            //Next element
+            pSubMeshElem = pSubMeshesRootElem->NextSiblingElement();
+        }
+
+    /////////////////////////////////////////////////
+    // LOAD SKELETON
 
 
 
-		hplDelete(pXmlDoc);
 
-		return pMesh;
-	}
 
-	//-----------------------------------------------------------------------
+    hplDelete(pXmlDoc);
 
-	bool cMeshLoaderMSH::SaveMesh(cMesh* apMesh, const tString& asFile)
-	{
-		TiXmlDocument* pXmlDoc = hplNew( TiXmlDocument, (asFile.c_str()) );
+    return pMesh;
+}
 
-		//Root
-		TiXmlElement XmlRoot("HPL_Mesh");
-		TiXmlElement* pRootElem = static_cast<TiXmlElement*>(pXmlDoc->InsertEndChild(XmlRoot));
+//-----------------------------------------------------------------------
 
-		//SubMeshes
-		TiXmlElement XmlSubMeshes("SubMeshes");
-		TiXmlElement* pSubMeshesElem = static_cast<TiXmlElement*>(pRootElem->InsertEndChild(XmlSubMeshes));
+bool cMeshLoaderMSH::SaveMesh(cMesh* apMesh, const tString& asFile)
+{
+    TiXmlDocument* pXmlDoc = hplNew( TiXmlDocument, (asFile.c_str()) );
 
-		//SubMesh
-        for(int i=0; i< apMesh->GetSubMeshNum(); i++)
-		{
-			cSubMesh* pSubMesh = apMesh->GetSubMesh(i);
-			iVertexBuffer *pVtxBuff = pSubMesh->GetVertexBuffer();
-			int lVtxSize =  pVtxBuff->GetVertexNum();
-			int lIdxSize =  pVtxBuff->GetIndexNum();
+    //Root
+    TiXmlElement XmlRoot("HPL_Mesh");
+    TiXmlElement* pRootElem = static_cast<TiXmlElement*>(pXmlDoc->InsertEndChild(XmlRoot));
 
-			//Create element
-			TiXmlElement XmlSubMesh("SubMesh");
-			TiXmlElement* pSubMeshElem = static_cast<TiXmlElement*>(pSubMeshesElem->InsertEndChild(XmlSubMesh));
+    //SubMeshes
+    TiXmlElement XmlSubMeshes("SubMeshes");
+    TiXmlElement* pSubMeshesElem = static_cast<TiXmlElement*>(pRootElem->InsertEndChild(XmlSubMeshes));
+
+    //SubMesh
+    for(int i=0; i< apMesh->GetSubMeshNum(); i++)
+        {
+            cSubMesh* pSubMesh = apMesh->GetSubMesh(i);
+            iVertexBuffer *pVtxBuff = pSubMesh->GetVertexBuffer();
+            int lVtxSize =  pVtxBuff->GetVertexNum();
+            int lIdxSize =  pVtxBuff->GetIndexNum();
+
+            //Create element
+            TiXmlElement XmlSubMesh("SubMesh");
+            TiXmlElement* pSubMeshElem = static_cast<TiXmlElement*>(pSubMeshesElem->InsertEndChild(XmlSubMesh));
 
             //Set data
-			pSubMeshElem->SetAttribute("name",pSubMesh->GetName().c_str());
-			iMaterial* pMat = pSubMesh->GetMaterial();
-			if(pMat)
-				pSubMeshElem->SetAttribute("material",pMat->GetName().c_str());
+            pSubMeshElem->SetAttribute("name",pSubMesh->GetName().c_str());
+            iMaterial* pMat = pSubMesh->GetMaterial();
+            if(pMat)
+                pSubMeshElem->SetAttribute("material",pMat->GetName().c_str());
 
-			//Vertices
-			TiXmlElement XmlVtx("Vertices");
-			TiXmlElement* pVtxElem = static_cast<TiXmlElement*>(pSubMeshElem->InsertEndChild(XmlVtx));
-			pVtxElem->SetAttribute("size",lVtxSize);
+            //Vertices
+            TiXmlElement XmlVtx("Vertices");
+            TiXmlElement* pVtxElem = static_cast<TiXmlElement*>(pSubMeshElem->InsertEndChild(XmlVtx));
+            pVtxElem->SetAttribute("size",lVtxSize);
 
-			for(int j=0; j < klNumOfVertexFlags;j++)
-			{
-				if(kvVertexFlags[j] & pVtxBuff->GetVertexFlags())
-				{
-					int lSizeMul = kvVertexElements[i];
-					//Only support texture1 coordinate as tangent for now.
-					if(kvVertexFlags[j] & eVertexFlag_Texture1)	lSizeMul = 4;
+            for(int j=0; j < klNumOfVertexFlags; j++)
+                {
+                    if(kvVertexFlags[j] & pVtxBuff->GetVertexFlags())
+                        {
+                            int lSizeMul = kvVertexElements[i];
+                            //Only support texture1 coordinate as tangent for now.
+                            if(kvVertexFlags[j] & eVertexFlag_Texture1)	lSizeMul = 4;
 
-					SaveFloatData(pVtxElem,lVtxSize * lSizeMul, GetVertexName(kvVertexFlags[j]),
-									pVtxBuff->GetArray(kvVertexFlags[j]));
-				}
-			}
+                            SaveFloatData(pVtxElem,lVtxSize * lSizeMul, GetVertexName(kvVertexFlags[j]),
+                                          pVtxBuff->GetArray(kvVertexFlags[j]));
+                        }
+                }
 
-			//Indices
-			TiXmlElement XmlIdx("Indices");
-			TiXmlElement* pIdxElem = static_cast<TiXmlElement*>(pSubMeshElem->InsertEndChild(XmlIdx));
-			pIdxElem->SetAttribute("size",lIdxSize);
-			SaveIntData(pIdxElem,lIdxSize,pVtxBuff->GetIndices());
-      	}
+            //Indices
+            TiXmlElement XmlIdx("Indices");
+            TiXmlElement* pIdxElem = static_cast<TiXmlElement*>(pSubMeshElem->InsertEndChild(XmlIdx));
+            pIdxElem->SetAttribute("size",lIdxSize);
+            SaveIntData(pIdxElem,lIdxSize,pVtxBuff->GetIndices());
+        }
 
-		bool bRet = pXmlDoc->SaveFile();
-		if(bRet==false)
-			Error("Couldn't save mesh to '%s'", asFile.c_str());
+    bool bRet = pXmlDoc->SaveFile();
+    if(bRet==false)
+        Error("Couldn't save mesh to '%s'", asFile.c_str());
 
-		hplDelete(pXmlDoc);
-		return bRet;
-	}
+    hplDelete(pXmlDoc);
+    return bRet;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cMeshLoaderMSH::IsSupported(const tString asFileType)
-	{
-		if(asFileType == "msh") return true;
+bool cMeshLoaderMSH::IsSupported(const tString asFileType)
+{
+    if(asFileType == "msh") return true;
 
-		return false;
-	}
+    return false;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cMeshLoaderMSH::AddSupportedTypes(tStringVec* avFileTypes)
-	{
-		avFileTypes->push_back("msh");
-	}
+void cMeshLoaderMSH::AddSupportedTypes(tStringVec* avFileTypes)
+{
+    avFileTypes->push_back("msh");
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cMeshLoaderMSH::SaveFloatData(TiXmlElement* apRoot, int alSize, const char *asName, float* apData)
-	{
-		//Pos
-		TiXmlElement XmlData(asName);
-		TiXmlElement* pElem = static_cast<TiXmlElement*>(apRoot->InsertEndChild(XmlData));
+void cMeshLoaderMSH::SaveFloatData(TiXmlElement* apRoot, int alSize, const char *asName, float* apData)
+{
+    //Pos
+    TiXmlElement XmlData(asName);
+    TiXmlElement* pElem = static_cast<TiXmlElement*>(apRoot->InsertEndChild(XmlData));
 
-		tString sData = "";
-		sData.reserve((alSize * 17) +1);
-		char sTemp[20];
+    tString sData = "";
+    sData.reserve((alSize * 17) +1);
+    char sTemp[20];
 
-		for(int i=0; i<alSize;i++)
-		{
-			float fNum = apData[i];
-			int j;
-			//get the number of decimals needed
-			for(j=6;j>0;j--)
-			{
-				if( ((int)(fNum * 10* (float)j )) % 10 !=0)
-				{
-					break;
-				}
-			}
-			int lDecimals = j;
+    for(int i=0; i<alSize; i++)
+        {
+            float fNum = apData[i];
+            int j;
+            //get the number of decimals needed
+            for(j=6; j>0; j--)
+                {
+                    if( ((int)(fNum * 10* (float)j )) % 10 !=0)
+                        {
+                            break;
+                        }
+                }
+            int lDecimals = j;
 
-			switch(lDecimals)
-			{
-			case 0: sprintf(sTemp,"%.0f",apData[i]);break;
-			case 1: sprintf(sTemp,"%.1f",apData[i]);break;
-			case 2: sprintf(sTemp,"%.2f",apData[i]);break;
-			case 3: sprintf(sTemp,"%.3f",apData[i]);break;
-			case 4: sprintf(sTemp,"%.4f",apData[i]);break;
-			case 5: sprintf(sTemp,"%.5f",apData[i]);break;
-			case 6: sprintf(sTemp,"%.6f",apData[i]);break;
-			}
+            switch(lDecimals)
+                {
+                case 0:
+                    sprintf(sTemp,"%.0f",apData[i]);
+                    break;
+                case 1:
+                    sprintf(sTemp,"%.1f",apData[i]);
+                    break;
+                case 2:
+                    sprintf(sTemp,"%.2f",apData[i]);
+                    break;
+                case 3:
+                    sprintf(sTemp,"%.3f",apData[i]);
+                    break;
+                case 4:
+                    sprintf(sTemp,"%.4f",apData[i]);
+                    break;
+                case 5:
+                    sprintf(sTemp,"%.5f",apData[i]);
+                    break;
+                case 6:
+                    sprintf(sTemp,"%.6f",apData[i]);
+                    break;
+                }
 
-			sData += sTemp;
+            sData += sTemp;
 
-			if(i != alSize -1)sData += " ";
-		}
+            if(i != alSize -1)sData += " ";
+        }
 
-		pElem->SetAttribute("data",sData.c_str());
-	}
+    pElem->SetAttribute("data",sData.c_str());
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	const char* cMeshLoaderMSH::GetVertexName(tVertexFlag aFlag)
-	{
-		switch(aFlag)
-		{
-			case eVertexFlag_Normal:	return "Normal";
-			case eVertexFlag_Position:	return "Position";
-			case eVertexFlag_Color0:	return "Color";
-			case eVertexFlag_Texture0:	return "Texture";
-			case eVertexFlag_Texture1:	return "Tangent";
-		}
-		return "";
-	}
+const char* cMeshLoaderMSH::GetVertexName(tVertexFlag aFlag)
+{
+    switch(aFlag)
+        {
+        case eVertexFlag_Normal:
+            return "Normal";
+        case eVertexFlag_Position:
+            return "Position";
+        case eVertexFlag_Color0:
+            return "Color";
+        case eVertexFlag_Texture0:
+            return "Texture";
+        case eVertexFlag_Texture1:
+            return "Tangent";
+        }
+    return "";
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cMeshLoaderMSH::SaveIntData(TiXmlElement* apElem,int alSize, unsigned int* apData)
-	{
-		tString sData = "";
-		sData.reserve((alSize * 6)+1);
-		char sTemp[10];
+void cMeshLoaderMSH::SaveIntData(TiXmlElement* apElem,int alSize, unsigned int* apData)
+{
+    tString sData = "";
+    sData.reserve((alSize * 6)+1);
+    char sTemp[10];
 
-		for(int i=0; i<alSize;i++)
-		{
-			sprintf(sTemp,"%d",apData[i]);
-			sData += sTemp;
+    for(int i=0; i<alSize; i++)
+        {
+            sprintf(sTemp,"%d",apData[i]);
+            sData += sTemp;
 
-			if(i != alSize -1)sData += " ";
-		}
+            if(i != alSize -1)sData += " ";
+        }
 
-		apElem->SetAttribute("data",sData.c_str());
-	}
+    apElem->SetAttribute("data",sData.c_str());
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cMeshLoaderMSH::FillVtxArray(float *apArray, const char* apString,int alSize)
-	{
-		if(apString==NULL){
-			Error("Data is NULL!\n");
-			return;
-		}
+void cMeshLoaderMSH::FillVtxArray(float *apArray, const char* apString,int alSize)
+{
+    if(apString==NULL)
+        {
+            Error("Data is NULL!\n");
+            return;
+        }
 
-		char vTempChar[20];
-		int lTempCharCount=0;
+    char vTempChar[20];
+    int lTempCharCount=0;
 
-		int lArrayCount=0;
-		int lStringCount =0;
+    int lArrayCount=0;
+    int lStringCount =0;
 
-		while(lArrayCount < alSize)
-		{
-			char c= apString[lStringCount];
-			//if a space is found, convert the previous characters to a float.
-			if(c == ' ' || c == 0)
-			{
-				if(lTempCharCount>0)
-				{
-					vTempChar[lTempCharCount] =0;
-					apArray[lArrayCount] = (float)atof(vTempChar);
+    while(lArrayCount < alSize)
+        {
+            char c= apString[lStringCount];
+            //if a space is found, convert the previous characters to a float.
+            if(c == ' ' || c == 0)
+                {
+                    if(lTempCharCount>0)
+                        {
+                            vTempChar[lTempCharCount] =0;
+                            apArray[lArrayCount] = (float)atof(vTempChar);
 
-					lTempCharCount=0;
-					lArrayCount++;
-				}
-			}
-			//If character is not a space, add to temp char.
-			else
-			{
-				vTempChar[lTempCharCount] = apString[lStringCount];
-				lTempCharCount++;
-			}
+                            lTempCharCount=0;
+                            lArrayCount++;
+                        }
+                }
+            //If character is not a space, add to temp char.
+            else
+                {
+                    vTempChar[lTempCharCount] = apString[lStringCount];
+                    lTempCharCount++;
+                }
 
-			lStringCount++;
-		}
-	}
+            lStringCount++;
+        }
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cMeshLoaderMSH::FillIdxArray(unsigned int *apArray, const char* apString,int alSize)
-	{
-		char vTempChar[20];
-		int lTempCharCount=0;
+void cMeshLoaderMSH::FillIdxArray(unsigned int *apArray, const char* apString,int alSize)
+{
+    char vTempChar[20];
+    int lTempCharCount=0;
 
-		int lArrayCount=0;
-		int lStringCount =0;
+    int lArrayCount=0;
+    int lStringCount =0;
 
-		while(lArrayCount < alSize)
-		{
-			char c= apString[lStringCount];
+    while(lArrayCount < alSize)
+        {
+            char c= apString[lStringCount];
 
-			//if a space is found, convert the previous characters to a float.
-			if(c == ' ' || c == 0)
-			{
-				if(lTempCharCount>0)
-				{
-					vTempChar[lTempCharCount] =0;
-					apArray[lArrayCount] = (unsigned int) atoi(vTempChar);
-					//Log("Adding: %d\n",apArray[lArrayCount]);
+            //if a space is found, convert the previous characters to a float.
+            if(c == ' ' || c == 0)
+                {
+                    if(lTempCharCount>0)
+                        {
+                            vTempChar[lTempCharCount] =0;
+                            apArray[lArrayCount] = (unsigned int) atoi(vTempChar);
+                            //Log("Adding: %d\n",apArray[lArrayCount]);
 
-					lTempCharCount=0;
-					lArrayCount++;
-				}
-			}
-			//If character is not a space, add to temp char.
-			else
-			{
-				vTempChar[lTempCharCount] = c;
-				lTempCharCount++;
-			}
+                            lTempCharCount=0;
+                            lArrayCount++;
+                        }
+                }
+            //If character is not a space, add to temp char.
+            else
+                {
+                    vTempChar[lTempCharCount] = c;
+                    lTempCharCount++;
+                }
 
-			lStringCount++;
-		}
-	}
+            lStringCount++;
+        }
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
 
 }

@@ -22,74 +22,75 @@
 #include "system/LowLevelSystem.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cFileSearcher::cFileSearcher(iLowLevelResources *apLowLevelResources)
-	{
-		mpLowLevelResources = apLowLevelResources;
-	}
+cFileSearcher::cFileSearcher(iLowLevelResources *apLowLevelResources)
+{
+    mpLowLevelResources = apLowLevelResources;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cFileSearcher::~cFileSearcher()
-	{
-	}
+cFileSearcher::~cFileSearcher()
+{
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	void cFileSearcher::AddDirectory(tString asPath, tString asMask)
-	{
-		tWStringList lstFileNames;
-		//Make the path with only "/" and lower case.
-		asPath = cString::ToLowerCase(cString::ReplaceCharTo(asPath,"\\","/"));
+//-----------------------------------------------------------------------
 
-		tStringSetIt it = m_setLoadedDirs.find(asPath);
-		//If the path is not allready added, add it!
-		if(it==m_setLoadedDirs.end())
-		{
-			m_setLoadedDirs.insert(asPath);
+void cFileSearcher::AddDirectory(tString asPath, tString asMask)
+{
+    tWStringList lstFileNames;
+    //Make the path with only "/" and lower case.
+    asPath = cString::ToLowerCase(cString::ReplaceCharTo(asPath,"\\","/"));
 
-			mpLowLevelResources->FindFilesInDir(lstFileNames,cString::To16Char(asPath),
-												cString::To16Char(asMask));
-			
-			for(tWStringListIt it = lstFileNames.begin();it!=lstFileNames.end();it++)
-			{
-				tString sFile = cString::To8Char(*it);
-				m_mapFiles.insert(tFilePathMap::value_type(
-													cString::ToLowerCase(sFile),
-													cString::SetFilePath(sFile,asPath)));
-			}
-		}
-	}
+    tStringSetIt it = m_setLoadedDirs.find(asPath);
+    //If the path is not allready added, add it!
+    if(it==m_setLoadedDirs.end())
+        {
+            m_setLoadedDirs.insert(asPath);
 
-	void cFileSearcher::ClearDirectories()
-	{
-		m_mapFiles.clear();
-		m_setLoadedDirs.clear();
-	}
+            mpLowLevelResources->FindFilesInDir(lstFileNames,cString::To16Char(asPath),
+                                                cString::To16Char(asMask));
 
-	//-----------------------------------------------------------------------
-	
-	tString cFileSearcher::GetFilePath(tString asName)
-	{
-		tFilePathMapIt it = m_mapFiles.find(cString::ToLowerCase(asName));
-		if(it == m_mapFiles.end())return "";
+            for(tWStringListIt it = lstFileNames.begin(); it!=lstFileNames.end(); it++)
+                {
+                    tString sFile = cString::To8Char(*it);
+                    m_mapFiles.insert(tFilePathMap::value_type(
+                                          cString::ToLowerCase(sFile),
+                                          cString::SetFilePath(sFile,asPath)));
+                }
+        }
+}
 
-        return it->second;
-	}
+void cFileSearcher::ClearDirectories()
+{
+    m_mapFiles.clear();
+    m_setLoadedDirs.clear();
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+tString cFileSearcher::GetFilePath(tString asName)
+{
+    tFilePathMapIt it = m_mapFiles.find(cString::ToLowerCase(asName));
+    if(it == m_mapFiles.end())return "";
+
+    return it->second;
+}
+
+//-----------------------------------------------------------------------
 
 }

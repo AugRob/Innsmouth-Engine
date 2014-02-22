@@ -21,56 +21,57 @@
 #include "graphics/Material.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cRenderObject2D::cRenderObject2D(iMaterial* apMaterial, tVertexVec* apVtxVec,tUIntVec* apIdxVec, 
-							ePrimitiveType aType,float afZ,cRect2f& aRect,
-							cMatrixf *apMtx, cVector3f *avTransform)
-	{
-		mpMaterial = apMaterial;
-		mpVtxVec = apVtxVec;
-		mpIdxVec = apIdxVec;
-		mType = aType;
-		mpMtx = apMtx;
-		mpTransform = avTransform;
-		mfZ = afZ;
-		mRect = aRect;
-		mpCustomRenderer = NULL;
-	}
+cRenderObject2D::cRenderObject2D(iMaterial* apMaterial, tVertexVec* apVtxVec,tUIntVec* apIdxVec,
+                                 ePrimitiveType aType,float afZ,cRect2f& aRect,
+                                 cMatrixf *apMtx, cVector3f *avTransform)
+{
+    mpMaterial = apMaterial;
+    mpVtxVec = apVtxVec;
+    mpIdxVec = apIdxVec;
+    mType = aType;
+    mpMtx = apMtx;
+    mpTransform = avTransform;
+    mfZ = afZ;
+    mRect = aRect;
+    mpCustomRenderer = NULL;
+}
 
-	cRenderObject2D::cRenderObject2D(iMaterial* apMaterial, iRenderObject2DRenderer* apRenderer, 
-		ePrimitiveType aType,float afZ)
-	{
-		mpMaterial = apMaterial;
-		mpVtxVec = NULL;
-		mpIdxVec = NULL;
-		mType = aType;
-		mpMtx = NULL;
-		mpTransform = NULL;
-		mfZ = afZ;
-		mpCustomRenderer = apRenderer;
-	}
+cRenderObject2D::cRenderObject2D(iMaterial* apMaterial, iRenderObject2DRenderer* apRenderer,
+                                 ePrimitiveType aType,float afZ)
+{
+    mpMaterial = apMaterial;
+    mpVtxVec = NULL;
+    mpIdxVec = NULL;
+    mType = aType;
+    mpMtx = NULL;
+    mpTransform = NULL;
+    mfZ = afZ;
+    mpCustomRenderer = apRenderer;
+}
 
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cRenderObject2D::~cRenderObject2D()
-	{
-	}
+cRenderObject2D::~cRenderObject2D()
+{
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 }

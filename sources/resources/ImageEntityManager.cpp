@@ -25,107 +25,110 @@
 #include "graphics/Material.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cImageEntityManager::cImageEntityManager(cGraphics* apGraphics,cResources *apResources)
-		: iResourceManager(apResources->GetFileSearcher(), apResources->GetLowLevel(),
-							apResources->GetLowLevelSystem())
-	{
-		mpGraphics = apGraphics;
-		mpResources = apResources;
+cImageEntityManager::cImageEntityManager(cGraphics* apGraphics,cResources *apResources)
+    : iResourceManager(apResources->GetFileSearcher(), apResources->GetLowLevel(),
+                       apResources->GetLowLevelSystem())
+{
+    mpGraphics = apGraphics;
+    mpResources = apResources;
 
-		mvImageHandle.resize(eMaterialTexture_LastEnum);
-		mvImageHandle.assign(mvImageHandle.size(),-1);
-	}
+    mvImageHandle.resize(eMaterialTexture_LastEnum);
+    mvImageHandle.assign(mvImageHandle.size(),-1);
+}
 
-	cImageEntityManager::~cImageEntityManager()
-	{
-		DestroyAll();
-	}
+cImageEntityManager::~cImageEntityManager()
+{
+    DestroyAll();
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iResourceBase* cImageEntityManager::Create(const tString& asName)
-	{
-		tString sPath;
-		cImageEntityData* pIEData;
-		tString asNewName;
+iResourceBase* cImageEntityManager::Create(const tString& asName)
+{
+    tString sPath;
+    cImageEntityData* pIEData;
+    tString asNewName;
 
-		BeginLoad(asName);
+    BeginLoad(asName);
 
-		asNewName = cString::SetFileExt(asName,"hed");
+    asNewName = cString::SetFileExt(asName,"hed");
 
-		pIEData = static_cast<cImageEntityData*>(FindLoadedResource(asNewName,sPath));
+    pIEData = static_cast<cImageEntityData*>(FindLoadedResource(asNewName,sPath));
 
-		if(pIEData==NULL && sPath!="")
-		{
-			pIEData = hplNew( cImageEntityData, (asNewName,mpGraphics,mpResources) );
+    if(pIEData==NULL && sPath!="")
+        {
+            pIEData = hplNew( cImageEntityData, (asNewName,mpGraphics,mpResources) );
 
-			if(pIEData->CreateFromFile(sPath,mvImageHandle)==false){
-				EndLoad();
-				return NULL;
-			}
+            if(pIEData->CreateFromFile(sPath,mvImageHandle)==false)
+                {
+                    EndLoad();
+                    return NULL;
+                }
 
-			if(pIEData)AddResource(pIEData);
-		}
-		else
-		{
-		}
+            if(pIEData)AddResource(pIEData);
+        }
+    else
+        {
+        }
 
-		if(pIEData)pIEData->IncUserCount();
-		else Error("Couldn't load image entity data '%s'\n",asNewName.c_str());
-		
-		EndLoad();
-		return pIEData;
-	}
+    if(pIEData)pIEData->IncUserCount();
+    else Error("Couldn't load image entity data '%s'\n",asNewName.c_str());
 
-	//-----------------------------------------------------------------------
+    EndLoad();
+    return pIEData;
+}
 
-	cImageEntityData* cImageEntityManager::CreateData(const tString& asName)
-	{
-		return 	static_cast<cImageEntityData*>(Create(asName));	
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+cImageEntityData* cImageEntityManager::CreateData(const tString& asName)
+{
+    return 	static_cast<cImageEntityData*>(Create(asName));
+}
 
-	void cImageEntityManager::Unload(iResourceBase* apResource)
-	{
+//-----------------------------------------------------------------------
 
-	}
-	//-----------------------------------------------------------------------
+void cImageEntityManager::Unload(iResourceBase* apResource)
+{
 
-	void cImageEntityManager::Destroy(iResourceBase* apResource)
-	{
-		apResource->DecUserCount();
+}
+//-----------------------------------------------------------------------
 
-		if(apResource->HasUsers()==false){
-			RemoveResource(apResource);
-			hplDelete(apResource);
-		}
-	}
+void cImageEntityManager::Destroy(iResourceBase* apResource)
+{
+    apResource->DecUserCount();
 
-	//-----------------------------------------------------------------------
+    if(apResource->HasUsers()==false)
+        {
+            RemoveResource(apResource);
+            hplDelete(apResource);
+        }
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
 
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 }

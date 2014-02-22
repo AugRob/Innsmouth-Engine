@@ -44,331 +44,344 @@
 
 #include "impl/tinyXML/tinyxml.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cResources::cResources(iLowLevelResources *apLowLevelResources,iLowLevelGraphics *apLowLevelGraphics)
-		: iUpdateable("Resources")
-	{
-		mpLowLevelResources = apLowLevelResources;
-		mpLowLevelGraphics = apLowLevelGraphics;
+cResources::cResources(iLowLevelResources *apLowLevelResources,iLowLevelGraphics *apLowLevelGraphics)
+    : iUpdateable("Resources")
+{
+    mpLowLevelResources = apLowLevelResources;
+    mpLowLevelGraphics = apLowLevelGraphics;
 
-		mpFileSearcher = hplNew( cFileSearcher, (mpLowLevelResources) );
+    mpFileSearcher = hplNew( cFileSearcher, (mpLowLevelResources) );
 
-		mpDefaultEntity3DLoader = NULL;
-		mpDefaultArea3DLoader = NULL;
+    mpDefaultEntity3DLoader = NULL;
+    mpDefaultArea3DLoader = NULL;
 
-		mpLanguageFile = NULL;
-	}
+    mpLanguageFile = NULL;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cResources::~cResources()
-	{
-		Log("Exiting Resources Module\n");
-		Log("--------------------------------------------------------\n");
+cResources::~cResources()
+{
+    Log("Exiting Resources Module\n");
+    Log("--------------------------------------------------------\n");
 
-		STLMapDeleteAll(m_mEntity3DLoaders);
-		STLMapDeleteAll(m_mArea3DLoaders);
-		STLMapDeleteAll(m_mMapEntity2DLoaders);
-		STLMapDeleteAll(m_mMapArea2DLoaders);
+    STLMapDeleteAll(m_mEntity3DLoaders);
+    STLMapDeleteAll(m_mArea3DLoaders);
+    STLMapDeleteAll(m_mMapEntity2DLoaders);
+    STLMapDeleteAll(m_mMapArea2DLoaders);
 
-		hplDelete(mpTileSetManager);
-		hplDelete(mpFontManager);
-		hplDelete(mpScriptManager);
-		hplDelete(mpParticleManager);
-		hplDelete(mpSoundManager);
-		hplDelete(mpImageEntityManager);
-		hplDelete(mpMeshManager);
-		hplDelete(mpMaterialManager);
-		hplDelete(mpGpuProgramManager);
-		hplDelete(mpImageManager);
-		hplDelete(mpTextureManager);
-		hplDelete(mpSoundEntityManager);
-		hplDelete(mpAnimationManager);
-		hplDelete(mpVideoManager);
-		
-		Log(" All resources deleted\n");
+    hplDelete(mpTileSetManager);
+    hplDelete(mpFontManager);
+    hplDelete(mpScriptManager);
+    hplDelete(mpParticleManager);
+    hplDelete(mpSoundManager);
+    hplDelete(mpImageEntityManager);
+    hplDelete(mpMeshManager);
+    hplDelete(mpMaterialManager);
+    hplDelete(mpGpuProgramManager);
+    hplDelete(mpImageManager);
+    hplDelete(mpTextureManager);
+    hplDelete(mpSoundEntityManager);
+    hplDelete(mpAnimationManager);
+    hplDelete(mpVideoManager);
 
-		hplDelete(mpFileSearcher);
-		hplDelete(mpMeshLoaderHandler);
+    Log(" All resources deleted\n");
 
-		if(mpLanguageFile) hplDelete(mpLanguageFile);
-		
-		mlstManagers.clear();
-		Log("--------------------------------------------------------\n\n");
-	}
+    hplDelete(mpFileSearcher);
+    hplDelete(mpMeshLoaderHandler);
 
-	//-----------------------------------------------------------------------
+    if(mpLanguageFile) hplDelete(mpLanguageFile);
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
+    mlstManagers.clear();
+    Log("--------------------------------------------------------\n\n");
+}
 
-	void cResources::Init(	cGraphics* apGraphics,cSystem *apSystem, cSound* apSound, cScene *apScene,
-							cGui *apGui)
-	{
-		Log("Initializing Resources Module\n");
-		Log("--------------------------------------------------------\n");
+//-----------------------------------------------------------------------
 
-		mpLowLevelSystem = apSystem->GetLowLevel();
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-		Log(" Creating resource managers\n");
+//-----------------------------------------------------------------------
 
-		mpImageManager = hplNew( cImageManager,(mpFileSearcher,mpLowLevelGraphics,mpLowLevelResources,mpLowLevelSystem) );
-		mlstManagers.push_back(mpImageManager);
-		mpGpuProgramManager = hplNew( cGpuProgramManager,(mpFileSearcher,mpLowLevelGraphics,mpLowLevelResources,mpLowLevelSystem) );
-		mlstManagers.push_back(mpGpuProgramManager);
-		mpTileSetManager = hplNew( cTileSetManager,(apGraphics,this) );
-		mlstManagers.push_back(mpTileSetManager);
-		mpImageEntityManager = hplNew( cImageEntityManager,(apGraphics, this) );
-		mlstManagers.push_back(mpImageEntityManager);
-		mpParticleManager = hplNew( cParticleManager,(apGraphics, this) );
-		mlstManagers.push_back(mpParticleManager);
-		mpSoundManager = hplNew( cSoundManager,(apSound, this) );
-		mlstManagers.push_back(mpParticleManager);
-		mpFontManager = hplNew( cFontManager,(apGraphics,apGui, this) );
-		mlstManagers.push_back(mpFontManager);
-		mpScriptManager = hplNew( cScriptManager,(apSystem, this) );
-		mlstManagers.push_back(mpScriptManager);
-		mpTextureManager = hplNew( cTextureManager,(apGraphics, this) );
-		mlstManagers.push_back(mpTextureManager);
-		mpMaterialManager = hplNew( cMaterialManager,(apGraphics, this) );
-		mlstManagers.push_back(mpMaterialManager);
-		mpMeshManager = hplNew( cMeshManager,(apGraphics, this) );
-		mlstManagers.push_back(mpMeshManager);
-		mpSoundEntityManager = hplNew( cSoundEntityManager,(apSound, this) );
-		mlstManagers.push_back(mpSoundEntityManager);
-		mpAnimationManager = hplNew( cAnimationManager,(apGraphics, this) );
-		mlstManagers.push_back(mpAnimationManager);
-		mpVideoManager = hplNew( cVideoManager,(apGraphics, this) );
-		mlstManagers.push_back(mpVideoManager);
-		
-		Log(" Misc Creation\n");
+void cResources::Init(	cGraphics* apGraphics,cSystem *apSystem, cSound* apSound, cScene *apScene,
+                        cGui *apGui)
+{
+    Log("Initializing Resources Module\n");
+    Log("--------------------------------------------------------\n");
 
-		mpMeshLoaderHandler = hplNew( cMeshLoaderHandler,(this, apScene) );
+    mpLowLevelSystem = apSystem->GetLowLevel();
 
-		mpLowLevelResources->AddMeshLoaders(mpMeshLoaderHandler);
-		mpLowLevelResources->AddVideoLoaders(mpVideoManager);
+    Log(" Creating resource managers\n");
 
-		Log("--------------------------------------------------------\n\n");
-	}
-	
-	//-----------------------------------------------------------------------
+    mpImageManager = hplNew( cImageManager,(mpFileSearcher,mpLowLevelGraphics,mpLowLevelResources,mpLowLevelSystem) );
+    mlstManagers.push_back(mpImageManager);
+    mpGpuProgramManager = hplNew( cGpuProgramManager,(mpFileSearcher,mpLowLevelGraphics,mpLowLevelResources,mpLowLevelSystem) );
+    mlstManagers.push_back(mpGpuProgramManager);
+    mpTileSetManager = hplNew( cTileSetManager,(apGraphics,this) );
+    mlstManagers.push_back(mpTileSetManager);
+    mpImageEntityManager = hplNew( cImageEntityManager,(apGraphics, this) );
+    mlstManagers.push_back(mpImageEntityManager);
+    mpParticleManager = hplNew( cParticleManager,(apGraphics, this) );
+    mlstManagers.push_back(mpParticleManager);
+    mpSoundManager = hplNew( cSoundManager,(apSound, this) );
+    mlstManagers.push_back(mpParticleManager);
+    mpFontManager = hplNew( cFontManager,(apGraphics,apGui, this) );
+    mlstManagers.push_back(mpFontManager);
+    mpScriptManager = hplNew( cScriptManager,(apSystem, this) );
+    mlstManagers.push_back(mpScriptManager);
+    mpTextureManager = hplNew( cTextureManager,(apGraphics, this) );
+    mlstManagers.push_back(mpTextureManager);
+    mpMaterialManager = hplNew( cMaterialManager,(apGraphics, this) );
+    mlstManagers.push_back(mpMaterialManager);
+    mpMeshManager = hplNew( cMeshManager,(apGraphics, this) );
+    mlstManagers.push_back(mpMeshManager);
+    mpSoundEntityManager = hplNew( cSoundEntityManager,(apSound, this) );
+    mlstManagers.push_back(mpSoundEntityManager);
+    mpAnimationManager = hplNew( cAnimationManager,(apGraphics, this) );
+    mlstManagers.push_back(mpAnimationManager);
+    mpVideoManager = hplNew( cVideoManager,(apGraphics, this) );
+    mlstManagers.push_back(mpVideoManager);
 
-	void cResources::Update(float afTimeStep)
-	{
-		tResourceManagerListIt it = mlstManagers.begin();
-		for(; it != mlstManagers.end(); ++it)
-		{
-			iResourceManager *pManager = *it;
+    Log(" Misc Creation\n");
 
-			pManager->Update(afTimeStep);
-		}
-	}
+    mpMeshLoaderHandler = hplNew( cMeshLoaderHandler,(this, apScene) );
 
-	//-----------------------------------------------------------------------
+    mpLowLevelResources->AddMeshLoaders(mpMeshLoaderHandler);
+    mpLowLevelResources->AddVideoLoaders(mpVideoManager);
 
-	cFileSearcher* cResources::GetFileSearcher()
-	{
-		return mpFileSearcher;
-	}
+    Log("--------------------------------------------------------\n\n");
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	/**
-	 * \todo File searcher should check so if the dir is allready added and if so return false and not add
-	 * \param &asDir 
-	 * \param &asMask 
-	 * \return 
-	 */
-	bool cResources::AddResourceDir(const tString &asDir, const tString &asMask)
-	{
-		mpFileSearcher->AddDirectory(asDir, asMask);
-		if(iResourceBase::GetLogCreateAndDelete())
-			Log(" Added resource directory '%s'\n",asDir.c_str());
-		return true;
-	}
+void cResources::Update(float afTimeStep)
+{
+    tResourceManagerListIt it = mlstManagers.begin();
+    for(; it != mlstManagers.end(); ++it)
+        {
+            iResourceManager *pManager = *it;
 
-	void cResources::ClearResourceDirs()
-	{	
-		mpFileSearcher->ClearDirectories();
-	}
+            pManager->Update(afTimeStep);
+        }
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cResources::SetLanguageFile(const tString &asFile)
-	{
-		if(mpLanguageFile){
-			hplDelete(mpLanguageFile);
-			mpLanguageFile = NULL;
-		}
+cFileSearcher* cResources::GetFileSearcher()
+{
+    return mpFileSearcher;
+}
 
-		tString asPath = mpFileSearcher->GetFilePath(asFile);
-		if(asPath=="")
-		{
-			Error("Couldn't load language file '%s'\n",asFile.c_str());
-			return false;
-		}
+//-----------------------------------------------------------------------
 
-		mpLanguageFile = hplNew( cLanguageFile, (this) );
+/**
+ * \todo File searcher should check so if the dir is allready added and if so return false and not add
+ * \param &asDir
+ * \param &asMask
+ * \return
+ */
+bool cResources::AddResourceDir(const tString &asDir, const tString &asMask)
+{
+    mpFileSearcher->AddDirectory(asDir, asMask);
+    if(iResourceBase::GetLogCreateAndDelete())
+        Log(" Added resource directory '%s'\n",asDir.c_str());
+    return true;
+}
 
-		return mpLanguageFile->LoadFromFile(asPath);
-	}
+void cResources::ClearResourceDirs()
+{
+    mpFileSearcher->ClearDirectories();
+}
 
-	const tWString& cResources::Translate(const tString& asCat, const tString& asName)
-	{
-		if(mpLanguageFile)
-		{
-			return mpLanguageFile->Translate(asCat,asName);
-		}
-		else
-		{
-			return mwsEmptyString;
-		}
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool cResources::SetLanguageFile(const tString &asFile)
+{
+    if(mpLanguageFile)
+        {
+            hplDelete(mpLanguageFile);
+            mpLanguageFile = NULL;
+        }
 
-	void cResources::AddEntity2DLoader(iEntity2DLoader* apLoader)
-	{
-		m_mMapEntity2DLoaders.insert(tEntity2DLoaderMap::value_type(apLoader->GetName(), apLoader));
-	}
-	
-	iEntity2DLoader* cResources::GetEntity2DLoader(const tString& asName)
-	{
-		tEntity2DLoaderMapIt it = m_mMapEntity2DLoaders.find(asName);
-		if(it == m_mMapEntity2DLoaders.end()){
-			Warning("No loader for type '%s' found!\n",asName.c_str());
-			return NULL;
-		}
+    tString asPath = mpFileSearcher->GetFilePath(asFile);
+    if(asPath=="")
+        {
+            Error("Couldn't load language file '%s'\n",asFile.c_str());
+            return false;
+        }
 
-		return it->second;
-	}
+    mpLanguageFile = hplNew( cLanguageFile, (this) );
 
-	//-----------------------------------------------------------------------
-	
-	void cResources::AddArea2DLoader(iArea2DLoader* apLoader)
-	{
-		m_mMapArea2DLoaders.insert(tArea2DLoaderMap::value_type(apLoader->GetName(), apLoader));
-	}
-	
-	iArea2DLoader* cResources::GetArea2DLoader(const tString& asName)
-	{
-		tArea2DLoaderMapIt it = m_mMapArea2DLoaders.find(asName);
-		if(it == m_mMapArea2DLoaders.end()){
-			Warning("No loader for type '%s' found!\n",asName.c_str());
-			return NULL;
-		}
+    return mpLanguageFile->LoadFromFile(asPath);
+}
 
-		return it->second;
-	}
+const tWString& cResources::Translate(const tString& asCat, const tString& asName)
+{
+    if(mpLanguageFile)
+        {
+            return mpLanguageFile->Translate(asCat,asName);
+        }
+    else
+        {
+            return mwsEmptyString;
+        }
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cResources::AddEntity3DLoader(iEntity3DLoader* apLoader, bool abSetAsDefault)
-	{
-		m_mEntity3DLoaders.insert(tEntity3DLoaderMap::value_type(apLoader->GetName(), apLoader));
+void cResources::AddEntity2DLoader(iEntity2DLoader* apLoader)
+{
+    m_mMapEntity2DLoaders.insert(tEntity2DLoaderMap::value_type(apLoader->GetName(), apLoader));
+}
 
-		if(abSetAsDefault){
-			mpDefaultEntity3DLoader = apLoader;
-		}
-	}
+iEntity2DLoader* cResources::GetEntity2DLoader(const tString& asName)
+{
+    tEntity2DLoaderMapIt it = m_mMapEntity2DLoaders.find(asName);
+    if(it == m_mMapEntity2DLoaders.end())
+        {
+            Warning("No loader for type '%s' found!\n",asName.c_str());
+            return NULL;
+        }
 
-	iEntity3DLoader* cResources::GetEntity3DLoader(const tString& asName)
-	{
-		tEntity3DLoaderMapIt it = m_mEntity3DLoaders.find(asName);
-		if(it == m_mEntity3DLoaders.end()){
-			Warning("No loader for type '%s' found!\n",asName.c_str());
-			
-			if(mpDefaultEntity3DLoader){
-				Log("Using default loader!\n");
-				return mpDefaultEntity3DLoader;
-			}
-			else {
-				return NULL;
-			}
-		}
+    return it->second;
+}
 
-		return it->second;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cResources::AddArea2DLoader(iArea2DLoader* apLoader)
+{
+    m_mMapArea2DLoaders.insert(tArea2DLoaderMap::value_type(apLoader->GetName(), apLoader));
+}
+
+iArea2DLoader* cResources::GetArea2DLoader(const tString& asName)
+{
+    tArea2DLoaderMapIt it = m_mMapArea2DLoaders.find(asName);
+    if(it == m_mMapArea2DLoaders.end())
+        {
+            Warning("No loader for type '%s' found!\n",asName.c_str());
+            return NULL;
+        }
+
+    return it->second;
+}
+
+//-----------------------------------------------------------------------
+
+void cResources::AddEntity3DLoader(iEntity3DLoader* apLoader, bool abSetAsDefault)
+{
+    m_mEntity3DLoaders.insert(tEntity3DLoaderMap::value_type(apLoader->GetName(), apLoader));
+
+    if(abSetAsDefault)
+        {
+            mpDefaultEntity3DLoader = apLoader;
+        }
+}
+
+iEntity3DLoader* cResources::GetEntity3DLoader(const tString& asName)
+{
+    tEntity3DLoaderMapIt it = m_mEntity3DLoaders.find(asName);
+    if(it == m_mEntity3DLoaders.end())
+        {
+            Warning("No loader for type '%s' found!\n",asName.c_str());
+
+            if(mpDefaultEntity3DLoader)
+                {
+                    Log("Using default loader!\n");
+                    return mpDefaultEntity3DLoader;
+                }
+            else
+                {
+                    return NULL;
+                }
+        }
+
+    return it->second;
+}
+
+//-----------------------------------------------------------------------
 
 
-	void cResources::AddArea3DLoader(iArea3DLoader* apLoader, bool abSetAsDefault)
-	{
-		m_mArea3DLoaders.insert(tArea3DLoaderMap::value_type(apLoader->GetName(), apLoader));
+void cResources::AddArea3DLoader(iArea3DLoader* apLoader, bool abSetAsDefault)
+{
+    m_mArea3DLoaders.insert(tArea3DLoaderMap::value_type(apLoader->GetName(), apLoader));
 
-		if(abSetAsDefault){
-			mpDefaultArea3DLoader = apLoader;
-		}
-	}
+    if(abSetAsDefault)
+        {
+            mpDefaultArea3DLoader = apLoader;
+        }
+}
 
-	iArea3DLoader* cResources::GetArea3DLoader(const tString& asName)
-	{
-		tArea3DLoaderMapIt it = m_mArea3DLoaders.find(asName);
-		if(it == m_mArea3DLoaders.end()){
-			Warning("No loader for area type '%s' found!\n",asName.c_str());
+iArea3DLoader* cResources::GetArea3DLoader(const tString& asName)
+{
+    tArea3DLoaderMapIt it = m_mArea3DLoaders.find(asName);
+    if(it == m_mArea3DLoaders.end())
+        {
+            Warning("No loader for area type '%s' found!\n",asName.c_str());
 
-			if(mpDefaultArea3DLoader){
-				Log("Using default loader!\n");
-				return mpDefaultArea3DLoader;
-			}
-			else {
-				return NULL;
-			}
-		}
+            if(mpDefaultArea3DLoader)
+                {
+                    Log("Using default loader!\n");
+                    return mpDefaultArea3DLoader;
+                }
+            else
+                {
+                    return NULL;
+                }
+        }
 
-		return it->second;
-	}
-	
-	//-----------------------------------------------------------------------
+    return it->second;
+}
 
-	bool cResources::LoadResourceDirsFile(const tString &asFile)
-	{
-		TiXmlDocument* pXmlDoc = hplNew( TiXmlDocument, (asFile.c_str()) );
-		if(pXmlDoc->LoadFile()==false)
-		{
-			Error("Couldn't load XML file '%s'!\n",asFile.c_str());
-			hplDelete( pXmlDoc);
-			return false;
-		}
+//-----------------------------------------------------------------------
 
-		//Get the root.
-		TiXmlElement* pRootElem = pXmlDoc->RootElement();
-        
-		TiXmlElement* pChildElem = pRootElem->FirstChildElement();
-		for(; pChildElem != NULL; pChildElem = pChildElem->NextSiblingElement())
-		{
-			tString sPath = cString::ToString(pChildElem->Attribute("Path"),"");
-			if(sPath==""){
-				continue;
-			}
+bool cResources::LoadResourceDirsFile(const tString &asFile)
+{
+    TiXmlDocument* pXmlDoc = hplNew( TiXmlDocument, (asFile.c_str()) );
+    if(pXmlDoc->LoadFile()==false)
+        {
+            Error("Couldn't load XML file '%s'!\n",asFile.c_str());
+            hplDelete( pXmlDoc);
+            return false;
+        }
 
-			if(sPath[0]=='/' || sPath[0]=='\\') sPath = sPath.substr(1);
+    //Get the root.
+    TiXmlElement* pRootElem = pXmlDoc->RootElement();
 
-			AddResourceDir(sPath);
-		}
+    TiXmlElement* pChildElem = pRootElem->FirstChildElement();
+    for(; pChildElem != NULL; pChildElem = pChildElem->NextSiblingElement())
+        {
+            tString sPath = cString::ToString(pChildElem->Attribute("Path"),"");
+            if(sPath=="")
+                {
+                    continue;
+                }
 
-		hplDelete(pXmlDoc);
-		return true;
-	}
+            if(sPath[0]=='/' || sPath[0]=='\\') sPath = sPath.substr(1);
 
-	//-----------------------------------------------------------------------
-	
-	iLowLevelResources* cResources::GetLowLevel()
-	{
-		return mpLowLevelResources;
-	}
+            AddResourceDir(sPath);
+        }
 
-	//-----------------------------------------------------------------------
+    hplDelete(pXmlDoc);
+    return true;
+}
+
+//-----------------------------------------------------------------------
+
+iLowLevelResources* cResources::GetLowLevel()
+{
+    return mpLowLevelResources;
+}
+
+//-----------------------------------------------------------------------
 
 }

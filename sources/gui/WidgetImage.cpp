@@ -27,108 +27,109 @@
 #include "gui/GuiSet.h"
 #include "gui/GuiGfxElement.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cWidgetImage::cWidgetImage(cGuiSet *apSet, cGuiSkin *apSkin) : iWidget(eWidgetType_Image,apSet, apSkin)
-	{
-		mpGfxImage = NULL;
-		mColor = cColor(1,1);
-	}
+cWidgetImage::cWidgetImage(cGuiSet *apSet, cGuiSkin *apSkin) : iWidget(eWidgetType_Image,apSet, apSkin)
+{
+    mpGfxImage = NULL;
+    mColor = cColor(1,1);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cWidgetImage::~cWidgetImage()
-	{
-	}
+cWidgetImage::~cWidgetImage()
+{
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	void cWidgetImage::SetImage(cGuiGfxElement *apGfx)
-	{
-		if(mpGfxImage == apGfx) return;
+//-----------------------------------------------------------------------
 
-		mpGfxImage = apGfx;
-	}
+void cWidgetImage::SetImage(cGuiGfxElement *apGfx)
+{
+    if(mpGfxImage == apGfx) return;
 
-	//-----------------------------------------------------------------------
+    mpGfxImage = apGfx;
+}
+
+//-----------------------------------------------------------------------
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// PROTECTED METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PROTECTED METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cWidgetImage::OnLoadGraphics()
-	{
-	}
+void cWidgetImage::OnLoadGraphics()
+{
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cWidgetImage::OnChangeSize()
-	{
-	}
+void cWidgetImage::OnChangeSize()
+{
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cWidgetImage::OnDraw(float afTimeStep, cGuiClipRegion *apClipRegion)
-	{
-		////////////////////////////////
-		// Background
-		if(mpGfxImage)
-		{
-			mpSet->DrawGfx(	mpGfxImage,	GetGlobalPosition(),mvSize,mColor);
-		}
-	}
+void cWidgetImage::OnDraw(float afTimeStep, cGuiClipRegion *apClipRegion)
+{
+    ////////////////////////////////
+    // Background
+    if(mpGfxImage)
+        {
+            mpSet->DrawGfx(	mpGfxImage,	GetGlobalPosition(),mvSize,mColor);
+        }
+}
 
-	//-----------------------------------------------------------------------
-	
-	bool cWidgetImage::OnMouseMove(cGuiMessageData &aData)
-	{
-		return true;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool cWidgetImage::OnMouseMove(cGuiMessageData &aData)
+{
+    return true;
+}
 
-	bool cWidgetImage::OnMouseDown(cGuiMessageData &aData)
-	{
-		return true;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool cWidgetImage::OnMouseDown(cGuiMessageData &aData)
+{
+    return true;
+}
 
-	bool cWidgetImage::OnMouseUp(cGuiMessageData &aData)
-	{
-		return true;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool cWidgetImage::OnMouseUp(cGuiMessageData &aData)
+{
+    return true;
+}
 
-	bool cWidgetImage::OnMouseEnter(cGuiMessageData &aData)
-	{
-		return false;
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	bool cWidgetImage::OnMouseLeave(cGuiMessageData &aData)
-	{
-		return false;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool cWidgetImage::OnMouseEnter(cGuiMessageData &aData)
+{
+    return false;
+}
+
+//-----------------------------------------------------------------------
+
+bool cWidgetImage::OnMouseLeave(cGuiMessageData &aData)
+{
+    return false;
+}
+
+//-----------------------------------------------------------------------
 
 
 }

@@ -19,31 +19,31 @@
 #include "SceneCamera.h"
 
 cSceneCamera::cSceneCamera(cGame *apGame, float afSpeed,cVector3f avStartPos,bool abShowFPS)
- : iUpdateable("SceneCamera")
+    : iUpdateable("SceneCamera")
 {
-	mpGame = apGame;
-	mfSpeed = afSpeed;
+    mpGame = apGame;
+    mfSpeed = afSpeed;
 
-	//Add actions
-	mpGame->GetInput()->AddAction(new cActionKeyboard("Escape",mpGame->GetInput(),eKey_ESCAPE));
+    //Add actions
+    mpGame->GetInput()->AddAction(new cActionKeyboard("Escape",mpGame->GetInput(),eKey_ESCAPE));
 
-	mpGame->GetInput()->AddAction(new cActionKeyboard("Forward",mpGame->GetInput(),eKey_w));
-	mpGame->GetInput()->AddAction(new cActionKeyboard("Backward",mpGame->GetInput(),eKey_s));
-	mpGame->GetInput()->AddAction(new cActionKeyboard("Right",mpGame->GetInput(),eKey_d));
-	mpGame->GetInput()->AddAction(new cActionKeyboard("Left",mpGame->GetInput(),eKey_a));
+    mpGame->GetInput()->AddAction(new cActionKeyboard("Forward",mpGame->GetInput(),eKey_w));
+    mpGame->GetInput()->AddAction(new cActionKeyboard("Backward",mpGame->GetInput(),eKey_s));
+    mpGame->GetInput()->AddAction(new cActionKeyboard("Right",mpGame->GetInput(),eKey_d));
+    mpGame->GetInput()->AddAction(new cActionKeyboard("Left",mpGame->GetInput(),eKey_a));
 
-	mpGame->GetInput()->GetLowLevel()->LockInput(true);
+    mpGame->GetInput()->GetLowLevel()->LockInput(true);
 
-	mpCamera = mpGame->GetScene()->CreateCamera3D(eCameraMoveMode_Fly);
-	mpGame->GetScene()->SetCamera(mpCamera);
-	mpCamera->SetPosition(avStartPos);
-	//mpCamera->SetFarClipPlane(1000);
-	//mpCamera->SetYaw(-kPi2f);
+    mpCamera = mpGame->GetScene()->CreateCamera3D(eCameraMoveMode_Fly);
+    mpGame->GetScene()->SetCamera(mpCamera);
+    mpCamera->SetPosition(avStartPos);
+    //mpCamera->SetFarClipPlane(1000);
+    //mpCamera->SetYaw(-kPi2f);
 
-	if(abShowFPS)
-		mpFont = mpGame->GetResources()->GetFontManager()->CreateFontData("viewer.fnt",12,32,128);
-	else
-		mpFont = NULL;
+    if(abShowFPS)
+        mpFont = mpGame->GetResources()->GetFontManager()->CreateFontData("viewer.fnt",12,32,128);
+    else
+        mpFont = NULL;
 }
 
 //-----------------------------------------------------------------------
@@ -57,29 +57,29 @@ cSceneCamera::~cSceneCamera()
 
 void cSceneCamera::Update(float afFrameTime)
 {
-	if(mpGame->GetInput()->IsTriggerd("Escape"))
-	{
-		mpGame->Exit();
-	}
-	
-	float fMul = mpGame->GetStepSize();	
+    if(mpGame->GetInput()->IsTriggerd("Escape"))
+        {
+            mpGame->Exit();
+        }
 
-	if(mpGame->GetInput()->IsTriggerd("Forward")) mpCamera->MoveForward(mfSpeed * fMul);
-	if(mpGame->GetInput()->IsTriggerd("Backward")) mpCamera->MoveForward(-mfSpeed* fMul);
-	if(mpGame->GetInput()->IsTriggerd("Right")) mpCamera->MoveRight(mfSpeed * fMul);
-	if(mpGame->GetInput()->IsTriggerd("Left")) mpCamera->MoveRight(-mfSpeed * fMul);
+    float fMul = mpGame->GetStepSize();
 
-	cVector2f vRel = mpGame->GetInput()->GetMouse()->GetRelPosition();
-	mpCamera->AddYaw(-vRel.x * 0.003f);
-	mpCamera->AddPitch(-vRel.y * 0.003f);
+    if(mpGame->GetInput()->IsTriggerd("Forward")) mpCamera->MoveForward(mfSpeed * fMul);
+    if(mpGame->GetInput()->IsTriggerd("Backward")) mpCamera->MoveForward(-mfSpeed* fMul);
+    if(mpGame->GetInput()->IsTriggerd("Right")) mpCamera->MoveRight(mfSpeed * fMul);
+    if(mpGame->GetInput()->IsTriggerd("Left")) mpCamera->MoveRight(-mfSpeed * fMul);
+
+    cVector2f vRel = mpGame->GetInput()->GetMouse()->GetRelPosition();
+    mpCamera->AddYaw(-vRel.x * 0.003f);
+    mpCamera->AddPitch(-vRel.y * 0.003f);
 }
 
 //-----------------------------------------------------------------------
 
 void cSceneCamera::OnDraw()
 {
-	if(mpFont)
-		mpFont->Draw(cVector2f(5,5),12,cColor(1,1),eFontAlign_Left,_W("FPS: %.1f"),mpGame->GetFPS());
+    if(mpFont)
+        mpFont->Draw(cVector2f(5,5),12,cColor(1,1),eFontAlign_Left,_W("FPS: %.1f"),mpGame->GetFPS());
 }
 
 //-----------------------------------------------------------------------

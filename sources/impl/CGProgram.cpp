@@ -22,385 +22,419 @@
 
 #include "system/String.h"
 
-namespace hpl{
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	tString cCGProgram::msForceFP = "AUTO";
-	tString cCGProgram::msForceVP = "AUTO";
+tString cCGProgram::msForceFP = "AUTO";
+tString cCGProgram::msForceVP = "AUTO";
 
-	cCGProgram::cCGProgram(tString asName,CGcontext aContext,eGpuProgramType aType) 
-	: iGpuProgram(asName, aType)
-	{
-		mContext = aContext;
+cCGProgram::cCGProgram(tString asName,CGcontext aContext,eGpuProgramType aType)
+    : iGpuProgram(asName, aType)
+{
+    mContext = aContext;
 
-		mProgram = NULL;
+    mProgram = NULL;
 
-		#define CG_CHECK(type, p) else if (msForce##type == #p) { \
+#define CG_CHECK(type, p) else if (msForce##type == #p) { \
 			mProfile = cgGLIsProfileSupported(CG_PROFILE_##p) ? CG_PROFILE_##p : CG_PROFILE_UNKNOWN; \
 		}
-		if(mProgramType == eGpuProgramType_Vertex)
-		{
-			if (msForceVP == "AUTO") {
-				mProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
-			} CG_CHECK(VP,ARBVP1)
-			CG_CHECK(VP,VP40)
-			CG_CHECK(VP,VP30)
-			CG_CHECK(VP,VP20)
-			CG_CHECK(VP,GLSLV) else {
-				Log("Forced VP %s unknown\n",msForceVP.c_str());
-				mProfile = CG_PROFILE_UNKNOWN;
-			}
-		}
-		else
-		{
-			if (msForceFP == "AUTO") {
-				mProfile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
-			} CG_CHECK(FP,ARBFP1)
-			CG_CHECK(FP,FP40)
-			CG_CHECK(FP,FP30)
-			CG_CHECK(FP,FP20)
-			CG_CHECK(FP,GLSLF) else {
-				Log("Forced FP %s unknown\n",msForceFP.c_str());
-				mProfile = CG_PROFILE_UNKNOWN;
-			}
-		}
-		#undef CG_CHECK
-		if(mbDebugInfo)
-		{
-			if(mProfile == CG_PROFILE_UNKNOWN)
-				Log("CG: '%s' using profile: UKNOWN\n",asName.c_str());
-			else
-				Log("CG: '%s' using profile: '%s'\n",asName.c_str(),cgGetProfileString(mProfile));
-		}
+    if(mProgramType == eGpuProgramType_Vertex)
+        {
+            if (msForceVP == "AUTO")
+                {
+                    mProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
+                }
+            CG_CHECK(VP,ARBVP1)
+            CG_CHECK(VP,VP40)
+            CG_CHECK(VP,VP30)
+            CG_CHECK(VP,VP20)
+            CG_CHECK(VP,GLSLV) else
+                {
+                    Log("Forced VP %s unknown\n",msForceVP.c_str());
+                    mProfile = CG_PROFILE_UNKNOWN;
+                }
+        }
+    else
+        {
+            if (msForceFP == "AUTO")
+                {
+                    mProfile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
+                }
+            CG_CHECK(FP,ARBFP1)
+            CG_CHECK(FP,FP40)
+            CG_CHECK(FP,FP30)
+            CG_CHECK(FP,FP20)
+            CG_CHECK(FP,GLSLF) else
+                {
+                    Log("Forced FP %s unknown\n",msForceFP.c_str());
+                    mProfile = CG_PROFILE_UNKNOWN;
+                }
+        }
+#undef CG_CHECK
+    if(mbDebugInfo)
+        {
+            if(mProfile == CG_PROFILE_UNKNOWN)
+                Log("CG: '%s' using profile: UKNOWN\n",asName.c_str());
+            else
+                Log("CG: '%s' using profile: '%s'\n",asName.c_str(),cgGetProfileString(mProfile));
+        }
 
-		for(int i=0; i< MAX_TEXTUREUNITS; ++i)
-		{
-			mvTexUnitParam[i] = NULL;
-		}
+    for(int i=0; i< MAX_TEXTUREUNITS; ++i)
+        {
+            mvTexUnitParam[i] = NULL;
+        }
 
-		cgGLSetOptimalOptions(mProfile);
-	}
+    cgGLSetOptimalOptions(mProfile);
+}
 
-	cCGProgram::~cCGProgram()
-	{
-		if(mProgram) cgDestroyProgram(mProgram);
-	}
+cCGProgram::~cCGProgram()
+{
+    if(mProgram) cgDestroyProgram(mProgram);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	bool cCGProgram::Reload()
-	{
-		return false;
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cCGProgram::Unload()
-	{
-	}
-	
-	//-----------------------------------------------------------------------
+bool cCGProgram::Reload()
+{
+    return false;
+}
 
-	void cCGProgram::Destroy()
-	{
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cCGProgram::CreateFromFile(const tString &asFile, const tString &asEntry)
-	{
-		if(mProfile == CG_PROFILE_UNKNOWN)
-		{
-			CGerror err = cgGetError();
-			Log("Could not find a working profile for cg file '%s'!\n",msName.c_str());
-			if (err != CG_NO_ERROR)Log(" %s\n", cgGetErrorString(err));
-			return false;
-		}
+void cCGProgram::Unload()
+{
+}
 
-		//Log("Creating CG prog\n");
+//-----------------------------------------------------------------------
 
-		mProgram = cgCreateProgramFromFile(mContext, CG_SOURCE, asFile.c_str(),mProfile,
-									asEntry.c_str(),NULL);
+void cCGProgram::Destroy()
+{
+}
 
-		//Log("getting CG errors\n");
+//-----------------------------------------------------------------------
 
-		CGerror err = cgGetError();
-		if (err != CG_NO_ERROR)
-		{
-			Log(" %s\n", cgGetErrorString(err));
-			const char* pString = cgGetLastListing(mContext);
-			int lIdx=0;
-			int lLastNewLine=0;
-			
-			Log(" -----------------------------------\n");
-			while(pString[lIdx]!=0)//true)
-			{
-				Log("%c",pString[lIdx]);
-				/*if(pString[lIdx]==0)
-				{
-					tString sStr = cString::Sub(pString, lLastNewLine,(lIdx-lLastNewLine));
-					Log(" %s",sStr.c_str());
-					break;
-				}
-				else if(pString[lIdx]=='\n')
-				{
-					tString sStr = cString::Sub(pString, lLastNewLine,(lIdx-lLastNewLine));
-					Log(" %s\n",sStr.c_str());
-					lLastNewLine = lIdx+1;
-				}*/
-				lIdx++;
-			}
-			Log(" -----------------------------------\n");
-			
-			Log("CG: Error loading: '%s'!\n",asFile.c_str());
-			return false;
-		}
-		
-		if(mProgram==NULL){
-			Log("Error loading: '%s'!\n",asFile.c_str());
-			return false;
-		}
+bool cCGProgram::CreateFromFile(const tString &asFile, const tString &asEntry)
+{
+    if(mProfile == CG_PROFILE_UNKNOWN)
+        {
+            CGerror err = cgGetError();
+            Log("Could not find a working profile for cg file '%s'!\n",msName.c_str());
+            if (err != CG_NO_ERROR)Log(" %s\n", cgGetErrorString(err));
+            return false;
+        }
 
-		//Log("Loading CG program\n");
+    //Log("Creating CG prog\n");
 
-		cgGLLoadProgram(mProgram);
+    mProgram = cgCreateProgramFromFile(mContext, CG_SOURCE, asFile.c_str(),mProfile,
+                                       asEntry.c_str(),NULL);
 
-		err = cgGetError();
-		if (err != CG_NO_ERROR)
-		{
-			Log(" %s\n", cgGetErrorString(err));
-			
-			cgDestroyProgram(mProgram);
-			mProgram = NULL;
+    //Log("getting CG errors\n");
 
-			return false;
-		}
+    CGerror err = cgGetError();
+    if (err != CG_NO_ERROR)
+        {
+            Log(" %s\n", cgGetErrorString(err));
+            const char* pString = cgGetLastListing(mContext);
+            int lIdx=0;
+            int lLastNewLine=0;
+
+            Log(" -----------------------------------\n");
+            while(pString[lIdx]!=0)//true)
+                {
+                    Log("%c",pString[lIdx]);
+                    /*if(pString[lIdx]==0)
+                    {
+                    	tString sStr = cString::Sub(pString, lLastNewLine,(lIdx-lLastNewLine));
+                    	Log(" %s",sStr.c_str());
+                    	break;
+                    }
+                    else if(pString[lIdx]=='\n')
+                    {
+                    	tString sStr = cString::Sub(pString, lLastNewLine,(lIdx-lLastNewLine));
+                    	Log(" %s\n",sStr.c_str());
+                    	lLastNewLine = lIdx+1;
+                    }*/
+                    lIdx++;
+                }
+            Log(" -----------------------------------\n");
+
+            Log("CG: Error loading: '%s'!\n",asFile.c_str());
+            return false;
+        }
+
+    if(mProgram==NULL)
+        {
+            Log("Error loading: '%s'!\n",asFile.c_str());
+            return false;
+        }
+
+    //Log("Loading CG program\n");
+
+    cgGLLoadProgram(mProgram);
+
+    err = cgGetError();
+    if (err != CG_NO_ERROR)
+        {
+            Log(" %s\n", cgGetErrorString(err));
+
+            cgDestroyProgram(mProgram);
+            mProgram = NULL;
+
+            return false;
+        }
 
 
-		msFile = asFile;
-		msEntry = asEntry;
+    msFile = asFile;
+    msEntry = asEntry;
 
-		///////////////////////////////
-		//Look for texture units.
-		//Log("File: %s\n", msFile.c_str());
-		int lCount =0;
-		CGparameter Param = cgGetFirstParameter(mProgram, CG_PROGRAM);
-		for(; Param != NULL; Param = cgGetNextParameter(Param))
-		{
-			//Check if it is a texture type
-			CGparameterclass paramClass = cgGetParameterClass(Param);
-			if(	paramClass != CG_PARAMETERCLASS_SAMPLER)
-			{
-				continue;
-			}
-			
-			//Get the unit number
-			int lUnit = lCount;
-			const char *pSemantic = cgGetParameterSemantic(Param);
-			if(pSemantic)
-			{
-				lUnit =	cString::ToInt(cString::Sub(pSemantic,7).c_str(),0);
-			}
-			tString sName = cgGetParameterName(Param);
-			//Log(" Texture %d: %s\n",lUnit,sName.c_str());
+    ///////////////////////////////
+    //Look for texture units.
+    //Log("File: %s\n", msFile.c_str());
+    int lCount =0;
+    CGparameter Param = cgGetFirstParameter(mProgram, CG_PROGRAM);
+    for(; Param != NULL; Param = cgGetNextParameter(Param))
+        {
+            //Check if it is a texture type
+            CGparameterclass paramClass = cgGetParameterClass(Param);
+            if(	paramClass != CG_PARAMETERCLASS_SAMPLER)
+                {
+                    continue;
+                }
 
-			mvTexUnitParam[lUnit] = Param;
+            //Get the unit number
+            int lUnit = lCount;
+            const char *pSemantic = cgGetParameterSemantic(Param);
+            if(pSemantic)
+                {
+                    lUnit =	cString::ToInt(cString::Sub(pSemantic,7).c_str(),0);
+                }
+            tString sName = cgGetParameterName(Param);
+            //Log(" Texture %d: %s\n",lUnit,sName.c_str());
 
-			++lCount;
-		}
-		
-		return true;
-	}
+            mvTexUnitParam[lUnit] = Param;
 
-	//-----------------------------------------------------------------------
+            ++lCount;
+        }
 
-	void cCGProgram::Bind()
-	{
-		cgGLBindProgram(mProgram);
-		cgGLEnableProfile(mProfile);
-	}
+    return true;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cCGProgram::UnBind()
-	{
-		cgGLDisableProfile(mProfile);
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	bool  cCGProgram::SetFloat(const tString& asName, float afX)
-	{
-		CGparameter Param = GetParam(asName, CG_FLOAT);
-		if(Param==NULL)return false;
-		
-		cgGLSetParameter1f(Param, afX);
-		return true;
-	}
+void cCGProgram::Bind()
+{
+    cgGLBindProgram(mProgram);
+    cgGLEnableProfile(mProfile);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool  cCGProgram::SetVec2f(const tString& asName, float afX,float afY)
-	{
-		CGparameter Param = GetParam(asName, CG_FLOAT2);
-		if(Param==NULL)return false;
+void cCGProgram::UnBind()
+{
+    cgGLDisableProfile(mProfile);
+}
 
-		cgGLSetParameter2f(Param, afX, afY);
-		return true;
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool  cCGProgram::SetVec3f(const tString& asName, float afX,float afY,float afZ)
-	{
-		CGparameter Param = GetParam(asName, CG_FLOAT3);
-		if(Param==NULL)return false;
+bool  cCGProgram::SetFloat(const tString& asName, float afX)
+{
+    CGparameter Param = GetParam(asName, CG_FLOAT);
+    if(Param==NULL)return false;
 
-		cgGLSetParameter3f(Param, afX, afY, afZ);
-		return true;
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	bool  cCGProgram::SetVec4f(const tString& asName, float afX,float afY,float afZ, float afW)
-	{
-		CGparameter Param = GetParam(asName, CG_FLOAT4);
-		if(Param==NULL)return false;
+    cgGLSetParameter1f(Param, afX);
+    return true;
+}
 
-		cgGLSetParameter4f(Param, afX, afY, afZ, afW);
-		return true;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool  cCGProgram::SetVec2f(const tString& asName, float afX,float afY)
+{
+    CGparameter Param = GetParam(asName, CG_FLOAT2);
+    if(Param==NULL)return false;
 
-	bool cCGProgram::SetMatrixf(const tString& asName, const cMatrixf& mMtx)
-	{
-		CGparameter Param = GetParam(asName, CG_FLOAT4x4);
-		if(Param==NULL)return false;
-		
-		cgGLSetMatrixParameterfr(Param,&mMtx.m[0][0]);
+    cgGLSetParameter2f(Param, afX, afY);
+    return true;
+}
 
-		return true;
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cCGProgram::SetMatrixf(const tString& asName, eGpuProgramMatrix mType, 
-		eGpuProgramMatrixOp mOp)
-	{
-		CGparameter Param = GetParam(asName, CG_FLOAT4x4);
-		if(Param==NULL)return false;
+bool  cCGProgram::SetVec3f(const tString& asName, float afX,float afY,float afZ)
+{
+    CGparameter Param = GetParam(asName, CG_FLOAT3);
+    if(Param==NULL)return false;
 
-        CGGLenum MtxType;
-		CGGLenum OpType;
-		switch(mType){
-			case eGpuProgramMatrix_View:				MtxType=CG_GL_MODELVIEW_MATRIX;break;
-			case eGpuProgramMatrix_Projection:		MtxType=CG_GL_PROJECTION_MATRIX;break;
-			case eGpuProgramMatrix_Texture:			MtxType=CG_GL_TEXTURE_MATRIX;break;
-			case eGpuProgramMatrix_ViewProjection:	MtxType=CG_GL_MODELVIEW_PROJECTION_MATRIX;break;
-		}
-		switch(mOp){
-			case eGpuProgramMatrixOp_Identity:		OpType=CG_GL_MATRIX_IDENTITY; break;
-			case eGpuProgramMatrixOp_Inverse:		OpType=CG_GL_MATRIX_INVERSE; break;
-			case eGpuProgramMatrixOp_Transpose:		OpType=CG_GL_MATRIX_TRANSPOSE; break;
-			case eGpuProgramMatrixOp_InverseTranspose:OpType=CG_GL_MATRIX_INVERSE_TRANSPOSE; break;
-		}
+    cgGLSetParameter3f(Param, afX, afY, afZ);
+    return true;
+}
 
-        cgGLSetStateMatrixParameter(Param,MtxType, OpType);
-		return true;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool  cCGProgram::SetVec4f(const tString& asName, float afX,float afY,float afZ, float afW)
+{
+    CGparameter Param = GetParam(asName, CG_FLOAT4);
+    if(Param==NULL)return false;
 
-	bool cCGProgram::SetTexture(const tString& asName,iTexture* apTexture, bool abAutoDisable)
-	{
-		CGtype textureType;
+    cgGLSetParameter4f(Param, afX, afY, afZ, afW);
+    return true;
+}
 
-    		if(apTexture)
-		{
-			switch(apTexture->GetTarget())
-			{
-				case eTextureTarget_1D:			textureType = CG_SAMPLER1D; break;
-				case eTextureTarget_2D:			textureType = CG_SAMPLER2D; break;
-				case eTextureTarget_CubeMap:	textureType = CG_SAMPLERCUBE; break;
-				case eTextureTarget_Rect:		textureType = CG_SAMPLERRECT; break;
-			}
+//-----------------------------------------------------------------------
 
-			CGparameter Param = GetParam(asName, textureType);
-			if(Param==NULL)return false;
+bool cCGProgram::SetMatrixf(const tString& asName, const cMatrixf& mMtx)
+{
+    CGparameter Param = GetParam(asName, CG_FLOAT4x4);
+    if(Param==NULL)return false;
 
-			cSDLTexture* pSDLTex = static_cast<cSDLTexture*>(apTexture);
+    cgGLSetMatrixParameterfr(Param,&mMtx.m[0][0]);
 
-			//Log("Intializing Tex %s(%d): %d\n",cgGetParameterName(Param),
-			//		Param,pSDLTex->GetTextureHandle());
-			cgGLSetTextureParameter(Param, pSDLTex->GetTextureHandle());
-			cgGLEnableTextureParameter(Param);
-		}
-		else
-		{
-			CGparameter Param = GetParam(asName, CG_SAMPLER2D);
-			if(Param==NULL)return false;
+    return true;
+}
 
-			cgGLDisableTextureParameter(Param);
-		}
+//-----------------------------------------------------------------------
 
-		return true;
-	}
+bool cCGProgram::SetMatrixf(const tString& asName, eGpuProgramMatrix mType,
+                            eGpuProgramMatrixOp mOp)
+{
+    CGparameter Param = GetParam(asName, CG_FLOAT4x4);
+    if(Param==NULL)return false;
 
-	//-----------------------------------------------------------------------
+    CGGLenum MtxType;
+    CGGLenum OpType;
+    switch(mType)
+        {
+        case eGpuProgramMatrix_View:
+            MtxType=CG_GL_MODELVIEW_MATRIX;
+            break;
+        case eGpuProgramMatrix_Projection:
+            MtxType=CG_GL_PROJECTION_MATRIX;
+            break;
+        case eGpuProgramMatrix_Texture:
+            MtxType=CG_GL_TEXTURE_MATRIX;
+            break;
+        case eGpuProgramMatrix_ViewProjection:
+            MtxType=CG_GL_MODELVIEW_PROJECTION_MATRIX;
+            break;
+        }
+    switch(mOp)
+        {
+        case eGpuProgramMatrixOp_Identity:
+            OpType=CG_GL_MATRIX_IDENTITY;
+            break;
+        case eGpuProgramMatrixOp_Inverse:
+            OpType=CG_GL_MATRIX_INVERSE;
+            break;
+        case eGpuProgramMatrixOp_Transpose:
+            OpType=CG_GL_MATRIX_TRANSPOSE;
+            break;
+        case eGpuProgramMatrixOp_InverseTranspose:
+            OpType=CG_GL_MATRIX_INVERSE_TRANSPOSE;
+            break;
+        }
 
-	bool cCGProgram::SetTextureToUnit(int alUnit, iTexture* apTexture)
-	{
-		if(mvTexUnitParam[alUnit]==NULL || alUnit >= MAX_TEXTUREUNITS) return false;
+    cgGLSetStateMatrixParameter(Param,MtxType, OpType);
+    return true;
+}
 
-		cSDLTexture* pSDLTex = static_cast<cSDLTexture*>(apTexture);
-		
-		if(apTexture)
-		{
-			//Log("Intializing TexUnit %s(%d): %d\n",cgGetParameterName(mvTexUnitParam[alUnit]),
-			//		mvTexUnitParam[alUnit],pSDLTex->GetTextureHandle());
-			cgGLSetTextureParameter(mvTexUnitParam[alUnit], pSDLTex->GetTextureHandle());
-			cgGLEnableTextureParameter(mvTexUnitParam[alUnit]);
-		}
-		else
-		{
-			cgGLDisableTextureParameter(mvTexUnitParam[alUnit]);
-		}
+//-----------------------------------------------------------------------
 
-		return true;
-	}
+bool cCGProgram::SetTexture(const tString& asName,iTexture* apTexture, bool abAutoDisable)
+{
+    CGtype textureType;
 
-		
-	//-----------------------------------------------------------------------
-	
-	//////////////////////////////////////////////////////////////////////////
-	// PROTECTED METHODS
-	//////////////////////////////////////////////////////////////////////////
+    if(apTexture)
+        {
+            switch(apTexture->GetTarget())
+                {
+                case eTextureTarget_1D:
+                    textureType = CG_SAMPLER1D;
+                    break;
+                case eTextureTarget_2D:
+                    textureType = CG_SAMPLER2D;
+                    break;
+                case eTextureTarget_CubeMap:
+                    textureType = CG_SAMPLERCUBE;
+                    break;
+                case eTextureTarget_Rect:
+                    textureType = CG_SAMPLERRECT;
+                    break;
+                }
 
-	//-----------------------------------------------------------------------
+            CGparameter Param = GetParam(asName, textureType);
+            if(Param==NULL)return false;
 
-	CGparameter cCGProgram::GetParam(const tString& asName,CGtype aType)
-	{
-		CGparameter Param = cgGetNamedParameter(mProgram, asName.c_str());
-		if(Param==NULL)return NULL;
+            cSDLTexture* pSDLTex = static_cast<cSDLTexture*>(apTexture);
 
-		CGtype type= cgGetParameterType(Param);
-		if(type!=aType)return NULL;
+            //Log("Intializing Tex %s(%d): %d\n",cgGetParameterName(Param),
+            //		Param,pSDLTex->GetTextureHandle());
+            cgGLSetTextureParameter(Param, pSDLTex->GetTextureHandle());
+            cgGLEnableTextureParameter(Param);
+        }
+    else
+        {
+            CGparameter Param = GetParam(asName, CG_SAMPLER2D);
+            if(Param==NULL)return false;
 
-		return Param;
-	}
-	
-	//-----------------------------------------------------------------------
+            cgGLDisableTextureParameter(Param);
+        }
+
+    return true;
+}
+
+//-----------------------------------------------------------------------
+
+bool cCGProgram::SetTextureToUnit(int alUnit, iTexture* apTexture)
+{
+    if(mvTexUnitParam[alUnit]==NULL || alUnit >= MAX_TEXTUREUNITS) return false;
+
+    cSDLTexture* pSDLTex = static_cast<cSDLTexture*>(apTexture);
+
+    if(apTexture)
+        {
+            //Log("Intializing TexUnit %s(%d): %d\n",cgGetParameterName(mvTexUnitParam[alUnit]),
+            //		mvTexUnitParam[alUnit],pSDLTex->GetTextureHandle());
+            cgGLSetTextureParameter(mvTexUnitParam[alUnit], pSDLTex->GetTextureHandle());
+            cgGLEnableTextureParameter(mvTexUnitParam[alUnit]);
+        }
+    else
+        {
+            cgGLDisableTextureParameter(mvTexUnitParam[alUnit]);
+        }
+
+    return true;
+}
+
+
+//-----------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////////
+// PROTECTED METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
+
+CGparameter cCGProgram::GetParam(const tString& asName,CGtype aType)
+{
+    CGparameter Param = cgGetNamedParameter(mProgram, asName.c_str());
+    if(Param==NULL)return NULL;
+
+    CGtype type= cgGetParameterType(Param);
+    if(type!=aType)return NULL;
+
+    return Param;
+}
+
+//-----------------------------------------------------------------------
 
 }

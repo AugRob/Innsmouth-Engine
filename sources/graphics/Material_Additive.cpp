@@ -27,159 +27,160 @@
 #include "math/Math.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// VERTEX PRORGAM SETUP
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// VERTEX PRORGAM SETUP
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	class cFogProgramSetup : public iMaterialProgramSetup
-	{
-	public:
-		void Setup(iGpuProgram *apProgram,cRenderSettings* apRenderSettings)
-		{
-			//apProgram->SetColor3f("fogColor",apRenderSettings->mFogColor);
-			apProgram->SetFloat("fogStart",apRenderSettings->mfFogStart);
-			apProgram->SetFloat("fogEnd",apRenderSettings->mfFogEnd);
-		}
-	};
+class cFogProgramSetup : public iMaterialProgramSetup
+{
+public:
+    void Setup(iGpuProgram *apProgram,cRenderSettings* apRenderSettings)
+    {
+        //apProgram->SetColor3f("fogColor",apRenderSettings->mFogColor);
+        apProgram->SetFloat("fogStart",apRenderSettings->mfFogStart);
+        apProgram->SetFloat("fogEnd",apRenderSettings->mfFogEnd);
+    }
+};
 
-	static cFogProgramSetup gFogProgramSetup;
+static cFogProgramSetup gFogProgramSetup;
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMaterial_Additive::cMaterial_Additive(	const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
-		cImageManager* apImageManager, cTextureManager *apTextureManager,
-		cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
-		eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
-		: iMaterial(asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
-					aPicture,apRenderer3D)
-	{
-		mbIsTransperant = true;
-		mbIsGlowing= false;
-		mbUsesLights = false;
+cMaterial_Additive::cMaterial_Additive(	const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
+                                        cImageManager* apImageManager, cTextureManager *apTextureManager,
+                                        cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
+                                        eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
+    : iMaterial(asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
+                aPicture,apRenderer3D)
+{
+    mbIsTransperant = true;
+    mbIsGlowing= false;
+    mbUsesLights = false;
 
-		mpFogVtxProg = mpProgramManager->CreateProgram("Fog_Trans_vp.cg","main",eGpuProgramType_Vertex);
+    mpFogVtxProg = mpProgramManager->CreateProgram("Fog_Trans_vp.cg","main",eGpuProgramType_Vertex);
 
-		if(mpLowLevelGraphics->GetCaps(eGraphicCaps_GL_FragmentProgram))
-			mpFogFragProg = mpProgramManager->CreateProgram("Fog_Trans_Alpha_fp.cg","main",eGpuProgramType_Fragment);
-		else
-			mpFogFragProg = NULL;
-	}
+    if(mpLowLevelGraphics->GetCaps(eGraphicCaps_GL_FragmentProgram))
+        mpFogFragProg = mpProgramManager->CreateProgram("Fog_Trans_Alpha_fp.cg","main",eGpuProgramType_Fragment);
+    else
+        mpFogFragProg = NULL;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMaterial_Additive::~cMaterial_Additive()
-	{
-		if(mpFogVtxProg) mpProgramManager->Destroy(mpFogVtxProg);
-		if(mpFogFragProg) mpProgramManager->Destroy(mpFogFragProg);
-	}
+cMaterial_Additive::~cMaterial_Additive()
+{
+    if(mpFogVtxProg) mpProgramManager->Destroy(mpFogVtxProg);
+    if(mpFogFragProg) mpProgramManager->Destroy(mpFogFragProg);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	iGpuProgram* cMaterial_Additive::GetVertexProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-			return mpFogVtxProg;
-		else
-			return NULL;
-	}
+//-----------------------------------------------------------------------
 
-	iMaterialProgramSetup* cMaterial_Additive::GetVertexProgramSetup(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-			return &gFogProgramSetup;
-		else
-			return NULL;
-	}
+iGpuProgram* cMaterial_Additive::GetVertexProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        return mpFogVtxProg;
+    else
+        return NULL;
+}
+
+iMaterialProgramSetup* cMaterial_Additive::GetVertexProgramSetup(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        return &gFogProgramSetup;
+    else
+        return NULL;
+}
 
 
-	bool cMaterial_Additive::VertexProgramUsesLight(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return false;
-	}
+bool cMaterial_Additive::VertexProgramUsesLight(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return false;
+}
 
-	bool cMaterial_Additive::VertexProgramUsesEye(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return false;
-	}
+bool cMaterial_Additive::VertexProgramUsesEye(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return false;
+}
 
-	iGpuProgram* cMaterial_Additive::GetFragmentProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-			return mpFogFragProg;
-		else
-			return NULL;
-	}
+iGpuProgram* cMaterial_Additive::GetFragmentProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        return mpFogFragProg;
+    else
+        return NULL;
+}
 
-	eMaterialAlphaMode cMaterial_Additive::GetAlphaMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialAlphaMode_Solid;
-	}
+eMaterialAlphaMode cMaterial_Additive::GetAlphaMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialAlphaMode_Solid;
+}
 
-	eMaterialBlendMode cMaterial_Additive::GetBlendMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialBlendMode_Add;
-	}
+eMaterialBlendMode cMaterial_Additive::GetBlendMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialBlendMode_Add;
+}
 
-	eMaterialChannelMode cMaterial_Additive::GetChannelMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialChannelMode_RGBA;
-	}
+eMaterialChannelMode cMaterial_Additive::GetChannelMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialChannelMode_RGBA;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iTexture* cMaterial_Additive::GetTexture(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(alUnit == 0)
-			return mvTexture[eMaterialTexture_Diffuse];
+iTexture* cMaterial_Additive::GetTexture(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(alUnit == 0)
+        return mvTexture[eMaterialTexture_Diffuse];
 
-		if(alUnit == 1 && mpRenderSettings->mbFogActive)
-		{
-			return mpRenderer3D->GetFogAddTexture();
-		}
-		
-		return NULL;
-	}
+    if(alUnit == 1 && mpRenderSettings->mbFogActive)
+        {
+            return mpRenderer3D->GetFogAddTexture();
+        }
 
-	eMaterialBlendMode cMaterial_Additive::GetTextureBlend(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialBlendMode_Mul;
-	}
+    return NULL;
+}
 
-	//-----------------------------------------------------------------------
-	
-	bool cMaterial_Additive::UsesType(eMaterialRenderType aType)
-	{
-		if(aType == eMaterialRenderType_Diffuse) return true;
-		return false;
-	}
+eMaterialBlendMode cMaterial_Additive::GetTextureBlend(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialBlendMode_Mul;
+}
 
-	//-----------------------------------------------------------------------
-	
-	tTextureTypeList cMaterial_Additive::GetTextureTypes()
-	{ 
-		tTextureTypeList vTypes;
-		vTypes.push_back(cTextureType("",eMaterialTexture_Diffuse));
-		vTypes.push_back(cTextureType("_ref",eMaterialTexture_Refraction));
-		vTypes.push_back(cTextureType("_spec",eMaterialTexture_Specular));
-		
-		return vTypes;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool cMaterial_Additive::UsesType(eMaterialRenderType aType)
+{
+    if(aType == eMaterialRenderType_Diffuse) return true;
+    return false;
+}
+
+//-----------------------------------------------------------------------
+
+tTextureTypeList cMaterial_Additive::GetTextureTypes()
+{
+    tTextureTypeList vTypes;
+    vTypes.push_back(cTextureType("",eMaterialTexture_Diffuse));
+    vTypes.push_back(cTextureType("_ref",eMaterialTexture_Refraction));
+    vTypes.push_back(cTextureType("_spec",eMaterialTexture_Specular));
+
+    return vTypes;
+}
+
+//-----------------------------------------------------------------------
 }

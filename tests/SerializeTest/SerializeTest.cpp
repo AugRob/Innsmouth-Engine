@@ -19,22 +19,22 @@ cGame *gpGame=NULL;
 
 class cPiggy : public iSerializable
 {
-	kSerializableClassInit(cPiggy)
+    kSerializableClassInit(cPiggy)
 public:
-	cPiggy()
-	{
-		mlLegs = 4;
-		msName = "Snotty";
-	}
+    cPiggy()
+    {
+        mlLegs = 4;
+        msName = "Snotty";
+    }
 
-	cPiggy(int alX)
-	{
-		mlLegs = alX;
-		msName = "Mutant";
-	}
+    cPiggy(int alX)
+    {
+        mlLegs = alX;
+        msName = "Mutant";
+    }
 
-	int mlLegs;
-	tString msName;
+    int mlLegs;
+    tString msName;
 };
 
 kBeginSerializeBase(cPiggy)
@@ -46,10 +46,10 @@ kEndSerialize()
 
 class cA : public iSerializable
 {
-	kSerializableClassInit(cA)
+    kSerializableClassInit(cA)
 public:
-	int mlX;
-	int mlY;
+    int mlX;
+    int mlY;
 };
 
 kBeginSerializeBase(cA)
@@ -62,57 +62,57 @@ kEndSerialize()
 
 class cB : public cA
 {
-	kSerializableClassInit(cB)
+    kSerializableClassInit(cB)
 public:
-	cB()
-	{
-		for(int i=0; i<10; i++)	mvValues[i] =0;
-		
-		for(int i=0; i<3;i++) mvPigs[i] = NULL;
-		mpPig = NULL;
+    cB()
+    {
+        for(int i=0; i<10; i++)	mvValues[i] =0;
 
-		mvStrings.Add("Test1");
-		mvStrings.Add("Test2");
+        for(int i=0; i<3; i++) mvPigs[i] = NULL;
+        mpPig = NULL;
 
-		mvInts.Add(1);
-		mvInts.Add(1);
-	}
+        mvStrings.Add("Test1");
+        mvStrings.Add("Test2");
 
-	float mfVal;
-	tString msName;
-	bool mbBe;
-	cVector3f mvVec;
-	cColor mCol;
-	cMatrixf mtxTest;
+        mvInts.Add(1);
+        mvInts.Add(1);
+    }
 
-	cContainerVec<tString> mvStrings;
-	cContainerVec<int> mvInts;
+    float mfVal;
+    tString msName;
+    bool mbBe;
+    cVector3f mvVec;
+    cColor mCol;
+    cMatrixf mtxTest;
 
-	float mvValues[10];
-	cPiggy* mvPigs[3];
+    cContainerVec<tString> mvStrings;
+    cContainerVec<int> mvInts;
 
-	cPiggy* mpPig;
+    float mvValues[10];
+    cPiggy* mvPigs[3];
 
-	cContainerList<cPiggy*> mvVals;
+    cPiggy* mpPig;
+
+    cContainerList<cPiggy*> mvVals;
 };
 
 kBeginSerialize(cB,cA)
-	kSerializeVar(mfVal, eSerializeType_Float32)
-	kSerializeVar(msName, eSerializeType_String)
-	kSerializeVar(mbBe, eSerializeType_Bool)
-	kSerializeVar(mvVec, eSerializeType_Vector3f)
-	kSerializeVar(mCol, eSerializeType_Color)
-	kSerializeVar(mtxTest, eSerializeType_Matrixf)
+kSerializeVar(mfVal, eSerializeType_Float32)
+kSerializeVar(msName, eSerializeType_String)
+kSerializeVar(mbBe, eSerializeType_Bool)
+kSerializeVar(mvVec, eSerializeType_Vector3f)
+kSerializeVar(mCol, eSerializeType_Color)
+kSerializeVar(mtxTest, eSerializeType_Matrixf)
 
-	//kSerializeVarContainer(mvStrings,eSerializeType_String) <- ILLEGAL!
-	kSerializeVarContainer(mvInts,eSerializeType_Int32)
+//kSerializeVarContainer(mvStrings,eSerializeType_String) <- ILLEGAL!
+kSerializeVarContainer(mvInts,eSerializeType_Int32)
 
-	kSerializeVarArray(mvValues,eSerializeType_Float32,10)
-	kSerializeVarArray(mvPigs,eSerializeType_ClassPointer,3)
+kSerializeVarArray(mvValues,eSerializeType_Float32,10)
+kSerializeVarArray(mvPigs,eSerializeType_ClassPointer,3)
 
-	kSerializeVar(mpPig, eSerializeType_ClassPointer)
+kSerializeVar(mpPig, eSerializeType_ClassPointer)
 
-	kSerializeClassContainer(mvVals,cPiggy,eSerializeType_ClassPointer)
+kSerializeClassContainer(mvVals,cPiggy,eSerializeType_ClassPointer)
 kEndSerialize()
 
 ////////////////////////////
@@ -120,143 +120,145 @@ kEndSerialize()
 class cSimpleUpdate : public iUpdateable
 {
 public:
-	cSimpleUpdate() : iUpdateable("test")
-	{
-		//gpGame->SetRenderOnce(true);
-		//gpGame->GetGraphics()->GetRenderer3D()->SetDebugFlags(eRendererDebugFlag_LogRendering);
-		//gpGame->GetGraphics()->GetRenderer3D()->SetDebugFlags(eRendererDebugFlag_DrawLightBoundingBox);
+    cSimpleUpdate() : iUpdateable("test")
+    {
+        //gpGame->SetRenderOnce(true);
+        //gpGame->GetGraphics()->GetRenderer3D()->SetDebugFlags(eRendererDebugFlag_LogRendering);
+        //gpGame->GetGraphics()->GetRenderer3D()->SetDebugFlags(eRendererDebugFlag_DrawLightBoundingBox);
 
-		//gpGame->GetGraphics()->GetRenderer3D()->SetDebugFlags(eRendererDebugFlag_DrawNormals);
-		//gpGame->GetGraphics()->GetRenderer3D()->SetDebugFlags(eRendererDebugFlag_DrawBoundingBox);
+        //gpGame->GetGraphics()->GetRenderer3D()->SetDebugFlags(eRendererDebugFlag_DrawNormals);
+        //gpGame->GetGraphics()->GetRenderer3D()->SetDebugFlags(eRendererDebugFlag_DrawBoundingBox);
 
-		mpLowLevelGraphics = gpGame->GetGraphics()->GetLowLevel();
-		
-		///////////////////////////////////////////////////
-		// Container Test
-		
-		cContainerVec<int> vVals;
+        mpLowLevelGraphics = gpGame->GetGraphics()->GetLowLevel();
 
-		/*vVals.Add(1);
-		vVals.Add(2);
-		vVals.Add(3);
-		vVals.Add(4);
+        ///////////////////////////////////////////////////
+        // Container Test
 
-		cContainerVecIterator<int> it = vVals.GetIterator();
+        cContainerVec<int> vVals;
 
-		while(it.HasNext())
-		{
-			Log("val: %d\n",it.Next());
-		}*/
+        /*vVals.Add(1);
+        vVals.Add(2);
+        vVals.Add(3);
+        vVals.Add(4);
 
-		///////////////////////////////////////////////////
-		// Serialize Test
-		cA testSaveA;
-		testSaveA.mlX =5;
-		testSaveA.mlY =66;
+        cContainerVecIterator<int> it = vVals.GetIterator();
 
-		cB testSaveB;
-		testSaveB.mlX =3;
-		testSaveB.mlY =8;
-		testSaveB.mfVal = 6.0f;
-		testSaveB.mbBe = false;
-		testSaveB.msName = "Thomas";
-		testSaveB.mvVec = cVector3f(1,2,3);
-		testSaveB.mCol = cColor(1,0,1,0);
-		testSaveB.mtxTest = cMatrixf::Identity;
-		for(int i=0; i<10; i++) testSaveB.mvValues[i] = (float)i+1;
-		
-		for(int i=0; i<3; i++) {
-			testSaveB.mvPigs[i] = new cPiggy();
-			testSaveB.mvPigs[i]->mlLegs =0;
-			testSaveB.mvPigs[i]->msName = "DeadOne";
-		}
-		
-		testSaveB.mpPig = new cPiggy();
-		testSaveB.mpPig->mlLegs = 2;
-		testSaveB.mpPig->msName = "TwoLegs";
+        while(it.HasNext())
+        {
+        	Log("val: %d\n",it.Next());
+        }*/
 
-		testSaveB.mvVals.Add(new cPiggy());
-		testSaveB.mvVals.Add(new cPiggy(2));
-		testSaveB.mvVals.Add(new cPiggy(6));
-		testSaveB.mvVals.Add(new cPiggy(7));
-		
-		Log("Saaaaaaving!\n");
-		cSerializeClass::SaveToFile(&testSaveB,_W("TestSave.txt"),"TestSave");
-		cB testSaveB2;
-		cSerializeClass::LoadFromFile(&testSaveB2,_W("TestSave.txt"));
-		cSerializeClass::SaveToFile(&testSaveB2,_W("TestSave2.txt"),"TestSave2");
-		
-				
-		//Add the engine's object plugin.
-		/*gpGame->GetResources()->AddEntity3DLoader(new cEntityLoader_Object("Object"));
+        ///////////////////////////////////////////////////
+        // Serialize Test
+        cA testSaveA;
+        testSaveA.mlX =5;
+        testSaveA.mlY =66;
 
-		mpWorld = gpGame->GetResources()->GetMeshLoaderHandler()->LoadWorld("maps/maptest0.dae");
-		gpGame->GetInput()->AddAction(new cActionKeyboard("Shadows",gpGame->GetInput(),eKey_1));
+        cB testSaveB;
+        testSaveB.mlX =3;
+        testSaveB.mlY =8;
+        testSaveB.mfVal = 6.0f;
+        testSaveB.mbBe = false;
+        testSaveB.msName = "Thomas";
+        testSaveB.mvVec = cVector3f(1,2,3);
+        testSaveB.mCol = cColor(1,0,1,0);
+        testSaveB.mtxTest = cMatrixf::Identity;
+        for(int i=0; i<10; i++) testSaveB.mvValues[i] = (float)i+1;
 
-		gpGame->GetScene()->SetWorld3D(mpWorld);
+        for(int i=0; i<3; i++)
+            {
+                testSaveB.mvPigs[i] = new cPiggy();
+                testSaveB.mvPigs[i]->mlLegs =0;
+                testSaveB.mvPigs[i]->msName = "DeadOne";
+            }
 
-		
-		mpFont = gpGame->GetResources()->GetFontManager()->CreateFontData("verdana.ttf");*/
+        testSaveB.mpPig = new cPiggy();
+        testSaveB.mpPig->mlLegs = 2;
+        testSaveB.mpPig->msName = "TwoLegs";
 
-		gpGame->Exit();
-	}
+        testSaveB.mvVals.Add(new cPiggy());
+        testSaveB.mvVals.Add(new cPiggy(2));
+        testSaveB.mvVals.Add(new cPiggy(6));
+        testSaveB.mvVals.Add(new cPiggy(7));
 
-	~cSimpleUpdate()
-	{
-	
-	}
+        Log("Saaaaaaving!\n");
+        cSerializeClass::SaveToFile(&testSaveB,_W("TestSave.txt"),"TestSave");
+        cB testSaveB2;
+        cSerializeClass::LoadFromFile(&testSaveB2,_W("TestSave.txt"));
+        cSerializeClass::SaveToFile(&testSaveB2,_W("TestSave2.txt"),"TestSave2");
 
-	void Update(float afFrameTime)
-	{
 
-	}
+        //Add the engine's object plugin.
+        /*gpGame->GetResources()->AddEntity3DLoader(new cEntityLoader_Object("Object"));
 
-	void OnDraw()
-	{
-	}
-	
-	void OnPostSceneDraw()
-	{
-		return;
-		cCamera3D *pCam = static_cast<cCamera3D*>(gpGame->GetScene()->GetCamera());
-		mpLowLevelGraphics->SetMatrix(eMatrix_ModelView, pCam->GetViewMatrix());
-		
-	}
-	
-	
+        mpWorld = gpGame->GetResources()->GetMeshLoaderHandler()->LoadWorld("maps/maptest0.dae");
+        gpGame->GetInput()->AddAction(new cActionKeyboard("Shadows",gpGame->GetInput(),eKey_1));
+
+        gpGame->GetScene()->SetWorld3D(mpWorld);
+
+
+        mpFont = gpGame->GetResources()->GetFontManager()->CreateFontData("verdana.ttf");*/
+
+        gpGame->Exit();
+    }
+
+    ~cSimpleUpdate()
+    {
+
+    }
+
+    void Update(float afFrameTime)
+    {
+
+    }
+
+    void OnDraw()
+    {
+    }
+
+    void OnPostSceneDraw()
+    {
+        return;
+        cCamera3D *pCam = static_cast<cCamera3D*>(gpGame->GetScene()->GetCamera());
+        mpLowLevelGraphics->SetMatrix(eMatrix_ModelView, pCam->GetViewMatrix());
+
+    }
+
+
 private:
-	float mfLightAngle;
-	iFontData *mpFont;
-	
-	cWorld3D* mpWorld;
-	iLowLevelGraphics* mpLowLevelGraphics;
+    float mfLightAngle;
+    iFontData *mpFont;
+
+    cWorld3D* mpWorld;
+    iLowLevelGraphics* mpLowLevelGraphics;
 };
 
 
 
-int hplMain(const tString &asCommandLine) {
-	//Init the game engine
-	gpGame = new cGame(new cSDLGameSetup(),800,600,32,false,45);
-	gpGame->GetGraphics()->GetLowLevel()->SetVsyncActive(false);
-	
-	//Add resources
-	gpGame->GetResources()->AddResourceDir("textures");
-	gpGame->GetResources()->AddResourceDir("models");
-	gpGame->GetResources()->AddResourceDir("fonts");
-	gpGame->GetResources()->AddResourceDir("maps");
+int hplMain(const tString &asCommandLine)
+{
+    //Init the game engine
+    gpGame = new cGame(new cSDLGameSetup(),800,600,32,false,45);
+    gpGame->GetGraphics()->GetLowLevel()->SetVsyncActive(false);
 
-	//Add updates
-   	cSimpleUpdate Update;
-	gpGame->GetUpdater()->AddUpdate("Default", &Update);
-	
-	cSimpleCamera cameraUpdate(gpGame,8,cVector3f(0,1,0),true);
-	gpGame->GetUpdater()->AddUpdate("Default", &cameraUpdate);
+    //Add resources
+    gpGame->GetResources()->AddResourceDir("textures");
+    gpGame->GetResources()->AddResourceDir("models");
+    gpGame->GetResources()->AddResourceDir("fonts");
+    gpGame->GetResources()->AddResourceDir("maps");
 
-		
-	//Run the engine
-	gpGame->Run();
+    //Add updates
+    cSimpleUpdate Update;
+    gpGame->GetUpdater()->AddUpdate("Default", &Update);
 
-	//Delete the engine
-	delete gpGame;
-	return 0;
+    cSimpleCamera cameraUpdate(gpGame,8,cVector3f(0,1,0),true);
+    gpGame->GetUpdater()->AddUpdate("Default", &cameraUpdate);
+
+
+    //Run the engine
+    gpGame->Run();
+
+    //Delete the engine
+    delete gpGame;
+    return 0;
 }

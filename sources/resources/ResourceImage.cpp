@@ -21,111 +21,117 @@
 #include "graphics/Texture.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
 #define kContractSize (0.001f)
 
-	cResourceImage::cResourceImage(tString asName,cFrameTexture *apFrameTex, 
-		cFrameBitmap *apFrameBmp, cRect2l aRect,
-		cVector2l avSrcSize, int alHandle) : iResourceBase(asName,0)
-	{
-		mpFrameTexture = apFrameTex;
-		mpFrameBitmap = apFrameBmp;
-		mRect = aRect;
-		mvSourceSize = avSrcSize;
-		mlHandle = alHandle;
+cResourceImage::cResourceImage(tString asName,cFrameTexture *apFrameTex,
+                               cFrameBitmap *apFrameBmp, cRect2l aRect,
+                               cVector2l avSrcSize, int alHandle) : iResourceBase(asName,0)
+{
+    mpFrameTexture = apFrameTex;
+    mpFrameBitmap = apFrameBmp;
+    mRect = aRect;
+    mvSourceSize = avSrcSize;
+    mlHandle = alHandle;
 
-		cVector2f vTexSize = cVector2f((float)mRect.w,(float)mRect.h ) / 
-								cVector2f((float)mvSourceSize.x,(float)mvSourceSize.y);
-		cVector2f vTexPos = cVector2f((float)mRect.x,(float)mRect.y ) / 
-								cVector2f((float)mvSourceSize.x,(float)mvSourceSize.y);
+    cVector2f vTexSize = cVector2f((float)mRect.w,(float)mRect.h ) /
+                         cVector2f((float)mvSourceSize.x,(float)mvSourceSize.y);
+    cVector2f vTexPos = cVector2f((float)mRect.x,(float)mRect.y ) /
+                        cVector2f((float)mvSourceSize.x,(float)mvSourceSize.y);
 
-		mvVtx.push_back(cVertex(cVector3f(0,0,0),
-						cVector3f(vTexPos.x+kContractSize, vTexPos.y+kContractSize,0), cColor(1)));
-		
-		mvVtx.push_back(cVertex(cVector3f((float)mRect.w,0,0),
-						cVector3f(vTexPos.x+vTexSize.x-kContractSize, vTexPos.y+kContractSize,0), 
-						cColor(1)));
-		
-		mvVtx.push_back(cVertex(cVector3f((float)mRect.w,(float)mRect.h,0),
-						cVector3f(vTexPos.x+vTexSize.x-kContractSize, vTexPos.y+vTexSize.y-kContractSize,0),
-						cColor(1)));
-		
-		mvVtx.push_back(cVertex(cVector3f(0,(float)mRect.h,0),
-						cVector3f(vTexPos.x+kContractSize, vTexPos.y+vTexSize.y-kContractSize,0), 
-						cColor(1)));
-	}
+    mvVtx.push_back(cVertex(cVector3f(0,0,0),
+                            cVector3f(vTexPos.x+kContractSize, vTexPos.y+kContractSize,0), cColor(1)));
 
-	//-----------------------------------------------------------------------
+    mvVtx.push_back(cVertex(cVector3f((float)mRect.w,0,0),
+                            cVector3f(vTexPos.x+vTexSize.x-kContractSize, vTexPos.y+kContractSize,0),
+                            cColor(1)));
 
-	cResourceImage::~cResourceImage()
-	{
-		mvVtx.clear();
-		//mpFrameTexture->DecPicCount();
-		mpFrameTexture = NULL;
-		mlHandle = -1;
-	}
+    mvVtx.push_back(cVertex(cVector3f((float)mRect.w,(float)mRect.h,0),
+                            cVector3f(vTexPos.x+vTexSize.x-kContractSize, vTexPos.y+vTexSize.y-kContractSize,0),
+                            cColor(1)));
 
-	//-----------------------------------------------------------------------
+    mvVtx.push_back(cVertex(cVector3f(0,(float)mRect.h,0),
+                            cVector3f(vTexPos.x+kContractSize, vTexPos.y+vTexSize.y-kContractSize,0),
+                            cColor(1)));
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iTexture *cResourceImage::GetTexture()const{return mpFrameTexture->GetTexture();}
+cResourceImage::~cResourceImage()
+{
+    mvVtx.clear();
+    //mpFrameTexture->DecPicCount();
+    mpFrameTexture = NULL;
+    mlHandle = -1;
+}
 
-	//-----------------------------------------------------------------------
-	
-	tVertexVec cResourceImage::GetVertexVecCopy(const cVector2f &avPos, const cVector2f &avSize)
-	{
-		tVertexVec vTmpVtx = mvVtx;
-		
-		if(avSize == cVector2f(-1,-1)) {
-			vTmpVtx[1].pos.x = mvVtx[0].pos.x + mRect.w;
-			vTmpVtx[2].pos.x = mvVtx[0].pos.x + mRect.w;
-			vTmpVtx[2].pos.y = mvVtx[0].pos.y + mRect.h;
-			vTmpVtx[3].pos.y = mvVtx[0].pos.y + mRect.h;
-		}
-		else {
-			vTmpVtx[1].pos.x = mvVtx[0].pos.x + avSize.x;
-			vTmpVtx[2].pos.x = mvVtx[0].pos.x + avSize.x;
-			vTmpVtx[2].pos.y = mvVtx[0].pos.y + avSize.y;
-			vTmpVtx[3].pos.y = mvVtx[0].pos.y + avSize.y;
-		}
+//-----------------------------------------------------------------------
 
-		for(int i=0;i<4;i++)
-			vTmpVtx[i].pos+=avPos;
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-		return vTmpVtx;
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cResourceImage::Reload()
-	{
-		return false;
-	}
-	
-	//-----------------------------------------------------------------------
+iTexture *cResourceImage::GetTexture()const
+{
+    return mpFrameTexture->GetTexture();
+}
 
-	void cResourceImage::Unload()
-	{
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cResourceImage::Destroy()
-	{
-	}
-	
-	//-----------------------------------------------------------------------
+tVertexVec cResourceImage::GetVertexVecCopy(const cVector2f &avPos, const cVector2f &avSize)
+{
+    tVertexVec vTmpVtx = mvVtx;
+
+    if(avSize == cVector2f(-1,-1))
+        {
+            vTmpVtx[1].pos.x = mvVtx[0].pos.x + mRect.w;
+            vTmpVtx[2].pos.x = mvVtx[0].pos.x + mRect.w;
+            vTmpVtx[2].pos.y = mvVtx[0].pos.y + mRect.h;
+            vTmpVtx[3].pos.y = mvVtx[0].pos.y + mRect.h;
+        }
+    else
+        {
+            vTmpVtx[1].pos.x = mvVtx[0].pos.x + avSize.x;
+            vTmpVtx[2].pos.x = mvVtx[0].pos.x + avSize.x;
+            vTmpVtx[2].pos.y = mvVtx[0].pos.y + avSize.y;
+            vTmpVtx[3].pos.y = mvVtx[0].pos.y + avSize.y;
+        }
+
+    for(int i=0; i<4; i++)
+        vTmpVtx[i].pos+=avPos;
+
+    return vTmpVtx;
+}
+
+//-----------------------------------------------------------------------
+
+bool cResourceImage::Reload()
+{
+    return false;
+}
+
+//-----------------------------------------------------------------------
+
+void cResourceImage::Unload()
+{
+}
+
+//-----------------------------------------------------------------------
+
+void cResourceImage::Destroy()
+{
+}
+
+//-----------------------------------------------------------------------
 
 }

@@ -18,115 +18,116 @@
  */
 #include "graphics/Material_Smoke2D.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMaterial_Smoke2D::cMaterial_Smoke2D(const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
-		cImageManager* apImageManager, cTextureManager *apTextureManager,
-		cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
-		eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
-	: iMaterial(asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
-				aPicture,apRenderer3D)
-	{
-		mbIsTransperant = true;
-		mbIsGlowing= true;
-		mType = eMaterialType_Smoke;
-	}
+cMaterial_Smoke2D::cMaterial_Smoke2D(const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
+                                     cImageManager* apImageManager, cTextureManager *apTextureManager,
+                                     cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
+                                     eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
+    : iMaterial(asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
+                aPicture,apRenderer3D)
+{
+    mbIsTransperant = true;
+    mbIsGlowing= true;
+    mType = eMaterialType_Smoke;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMaterial_Smoke2D::~cMaterial_Smoke2D()
-	{
-		
-	}
+cMaterial_Smoke2D::~cMaterial_Smoke2D()
+{
 
-	//-----------------------------------------------------------------------
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	void cMaterial_Smoke2D::Compile()
-	{
+//-----------------------------------------------------------------------
 
-	}
-	
-	//-----------------------------------------------------------------------
+void cMaterial_Smoke2D::Compile()
+{
 
-	bool cMaterial_Smoke2D::StartRendering(eMaterialRenderType aType,iCamera* apCam,iLight *pLight)
-	{
-		if(aType == eMaterialRenderType_Diffuse)
-		{
-			mpLowLevelGraphics->SetBlendActive(true);
-			mpLowLevelGraphics->SetBlendFunc(eBlendFunc_Zero,eBlendFunc_OneMinusSrcColor);
+}
 
-			mpLowLevelGraphics->SetTexture(0, GetTexture(eMaterialTexture_Diffuse));
-			mpLowLevelGraphics->SetActiveTextureUnit(0);
-			//mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorOp1,eTextureOp_Alpha);
-			//mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Modulate);
-			mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorOp1,eTextureOp_Color);
-			mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Modulate);
-			
-			return true;
-		}
-		return false;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-	
-	void cMaterial_Smoke2D::EndRendering(eMaterialRenderType aType)
-	{
-		if(aType == eMaterialRenderType_Diffuse)
-		{
-			mpLowLevelGraphics->SetActiveTextureUnit(0);
-			mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorOp1,eTextureOp_Color);
-			mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Modulate);
-		}
+bool cMaterial_Smoke2D::StartRendering(eMaterialRenderType aType,iCamera* apCam,iLight *pLight)
+{
+    if(aType == eMaterialRenderType_Diffuse)
+        {
+            mpLowLevelGraphics->SetBlendActive(true);
+            mpLowLevelGraphics->SetBlendFunc(eBlendFunc_Zero,eBlendFunc_OneMinusSrcColor);
 
-	}
-	
-	//-----------------------------------------------------------------------
+            mpLowLevelGraphics->SetTexture(0, GetTexture(eMaterialTexture_Diffuse));
+            mpLowLevelGraphics->SetActiveTextureUnit(0);
+            //mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorOp1,eTextureOp_Alpha);
+            //mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Modulate);
+            mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorOp1,eTextureOp_Color);
+            mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Modulate);
 
-	tVtxBatchFlag cMaterial_Smoke2D::GetBatchFlags(eMaterialRenderType aType)
-	{
-		return eVtxBatchFlag_Position |	eVtxBatchFlag_Texture0 | eVtxBatchFlag_Color0;
-	}
+            return true;
+        }
+    return false;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cMaterial_Smoke2D::NextPass(eMaterialRenderType aType)
-	{
-		return false;
-	}
+void cMaterial_Smoke2D::EndRendering(eMaterialRenderType aType)
+{
+    if(aType == eMaterialRenderType_Diffuse)
+        {
+            mpLowLevelGraphics->SetActiveTextureUnit(0);
+            mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorOp1,eTextureOp_Color);
+            mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Modulate);
+        }
 
-	//-----------------------------------------------------------------------
+}
 
-	bool cMaterial_Smoke2D::HasMultiplePasses(eMaterialRenderType aType)
-	{
-		return false;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+tVtxBatchFlag cMaterial_Smoke2D::GetBatchFlags(eMaterialRenderType aType)
+{
+    return eVtxBatchFlag_Position |	eVtxBatchFlag_Texture0 | eVtxBatchFlag_Color0;
+}
 
-	eMaterialType cMaterial_Smoke2D::GetType(eMaterialRenderType aType)
-	{
-		return mType;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool cMaterial_Smoke2D::NextPass(eMaterialRenderType aType)
+{
+    return false;
+}
 
-	void cMaterial_Smoke2D::EditVertexes(eMaterialRenderType aType, iCamera* apCam, iLight *pLight, 
-		tVertexVec *apVtxVec,cVector3f *apTransform,unsigned int alIndexAdd)
-	{
+//-----------------------------------------------------------------------
 
-	}
+bool cMaterial_Smoke2D::HasMultiplePasses(eMaterialRenderType aType)
+{
+    return false;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+eMaterialType cMaterial_Smoke2D::GetType(eMaterialRenderType aType)
+{
+    return mType;
+}
+
+//-----------------------------------------------------------------------
+
+void cMaterial_Smoke2D::EditVertexes(eMaterialRenderType aType, iCamera* apCam, iLight *pLight,
+                                     tVertexVec *apVtxVec,cVector3f *apTransform,unsigned int alIndexAdd)
+{
+
+}
+
+//-----------------------------------------------------------------------
 }

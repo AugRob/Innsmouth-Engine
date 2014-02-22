@@ -27,129 +27,133 @@
 #include "graphics/FontData.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cFontManager::cFontManager(cGraphics* apGraphics,cGui *apGui,cResources *apResources)
-		: iResourceManager(apResources->GetFileSearcher(), apResources->GetLowLevel(),
-							apResources->GetLowLevelSystem())
-	{
-		mpGraphics = apGraphics;
-		mpResources = apResources;
-		mpGui = apGui;
-	}
+cFontManager::cFontManager(cGraphics* apGraphics,cGui *apGui,cResources *apResources)
+    : iResourceManager(apResources->GetFileSearcher(), apResources->GetLowLevel(),
+                       apResources->GetLowLevelSystem())
+{
+    mpGraphics = apGraphics;
+    mpResources = apResources;
+    mpGui = apGui;
+}
 
-	cFontManager::~cFontManager()
-	{
-		DestroyAll();
-		Log(" Done with fonts\n");
-	}
+cFontManager::~cFontManager()
+{
+    DestroyAll();
+    Log(" Done with fonts\n");
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iFontData* cFontManager::CreateFontData(const tString& asName, int alSize,unsigned short alFirstChar,
-											unsigned short alLastChar)
-	{
-		tString sPath;
-		iFontData* pFont;
-		tString asNewName = cString::ToLowerCase(asName);
+iFontData* cFontManager::CreateFontData(const tString& asName, int alSize,unsigned short alFirstChar,
+                                        unsigned short alLastChar)
+{
+    tString sPath;
+    iFontData* pFont;
+    tString asNewName = cString::ToLowerCase(asName);
 
-		BeginLoad(asName);
-		
-		//asNewName = cString::SetFileExt(asName,"ttf");
+    BeginLoad(asName);
 
-		pFont = static_cast<iFontData*>(this->FindLoadedResource(asNewName,sPath));
+    //asNewName = cString::SetFileExt(asName,"ttf");
 
-		if(pFont==NULL && sPath!="")
-		{
-			pFont = mpGraphics->GetLowLevel()->CreateFontData(asNewName);
-			pFont->SetUp(mpGraphics->GetDrawer(),mpLowLevelResources,mpGui);
-			
-			tString sExt = cString::ToLowerCase(cString::GetFileExt(asName));
+    pFont = static_cast<iFontData*>(this->FindLoadedResource(asNewName,sPath));
 
-			//True Type Font
-			if(sExt == "ttf")
-			{
-				if(pFont->CreateFromFontFile(sPath,alSize,alFirstChar,alLastChar)==false){
-					hplDelete(pFont);
-					EndLoad();
-					return NULL;
-				}
-			}
-			//Angel code font type
-			else if(sExt == "fnt")
-			{
-				if(pFont->CreateFromBitmapFile(sPath)==false){
-					hplDelete(pFont);
-					EndLoad();
-					return NULL;
-				}
-			}
-			else
-			{
-				Error("Font '%s' has an unkown extension!\n",asName.c_str());
-				hplDelete(pFont);
-				EndLoad();
-				return NULL;
-			}
-			
-			//mpResources->GetImageManager()->FlushAll();
-			AddResource(pFont);
-		}
+    if(pFont==NULL && sPath!="")
+        {
+            pFont = mpGraphics->GetLowLevel()->CreateFontData(asNewName);
+            pFont->SetUp(mpGraphics->GetDrawer(),mpLowLevelResources,mpGui);
 
-		if(pFont)pFont->IncUserCount();
-		else Error("Couldn't create font '%s'\n",asNewName.c_str());
-		
-		EndLoad();
-		return pFont;
-	}
+            tString sExt = cString::ToLowerCase(cString::GetFileExt(asName));
 
-	//-----------------------------------------------------------------------
+            //True Type Font
+            if(sExt == "ttf")
+                {
+                    if(pFont->CreateFromFontFile(sPath,alSize,alFirstChar,alLastChar)==false)
+                        {
+                            hplDelete(pFont);
+                            EndLoad();
+                            return NULL;
+                        }
+                }
+            //Angel code font type
+            else if(sExt == "fnt")
+                {
+                    if(pFont->CreateFromBitmapFile(sPath)==false)
+                        {
+                            hplDelete(pFont);
+                            EndLoad();
+                            return NULL;
+                        }
+                }
+            else
+                {
+                    Error("Font '%s' has an unkown extension!\n",asName.c_str());
+                    hplDelete(pFont);
+                    EndLoad();
+                    return NULL;
+                }
 
-	iResourceBase* cFontManager::Create(const tString& asName)
-	{
-		return CreateFontData(asName, 16, 32, 255);
-	}
+            //mpResources->GetImageManager()->FlushAll();
+            AddResource(pFont);
+        }
 
-	//-----------------------------------------------------------------------
+    if(pFont)pFont->IncUserCount();
+    else Error("Couldn't create font '%s'\n",asNewName.c_str());
 
-	void cFontManager::Unload(iResourceBase* apResource)
-	{
+    EndLoad();
+    return pFont;
+}
 
-	}
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cFontManager::Destroy(iResourceBase* apResource)
-	{
-		apResource->DecUserCount();
+iResourceBase* cFontManager::Create(const tString& asName)
+{
+    return CreateFontData(asName, 16, 32, 255);
+}
 
-		if(apResource->HasUsers()==false){
-			RemoveResource(apResource);
-			hplDelete(apResource);
-		}
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cFontManager::Unload(iResourceBase* apResource)
+{
 
-	//-----------------------------------------------------------------------
+}
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
+void cFontManager::Destroy(iResourceBase* apResource)
+{
+    apResource->DecUserCount();
 
-	//-----------------------------------------------------------------------
+    if(apResource->HasUsers()==false)
+        {
+            RemoveResource(apResource);
+            hplDelete(apResource);
+        }
+}
+
+//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
 
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 }

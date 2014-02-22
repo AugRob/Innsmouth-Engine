@@ -26,212 +26,215 @@
 #include "input/ActionMouseButton.h"
 
 
-namespace hpl 
+namespace hpl
 {
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	cInput::cInput(iLowLevelInput *apLowLevelInput) : iUpdateable("HPL_Input")
-	{
-		mpLowLevelInput = apLowLevelInput;
+//-----------------------------------------------------------------------
 
-		mpKeyboard = mpLowLevelInput->CreateKeyboard();
-		mpMouse = mpLowLevelInput->CreateMouse();
+cInput::cInput(iLowLevelInput *apLowLevelInput) : iUpdateable("HPL_Input")
+{
+    mpLowLevelInput = apLowLevelInput;
 
-		mlstInputDevices.push_back(mpMouse);
-		mlstInputDevices.push_back(mpKeyboard);
-	}
+    mpKeyboard = mpLowLevelInput->CreateKeyboard();
+    mpMouse = mpLowLevelInput->CreateMouse();
 
-	//-----------------------------------------------------------------------
-	
-	cInput::~cInput()
-	{
-		Log("Exiting Input Module\n");
-		Log("--------------------------------------------------------\n");
+    mlstInputDevices.push_back(mpMouse);
+    mlstInputDevices.push_back(mpKeyboard);
+}
 
-		STLMapDeleteAll(m_mapActions);
+//-----------------------------------------------------------------------
 
-		if(mpKeyboard)hplDelete(mpKeyboard);
-		if(mpMouse)hplDelete(mpMouse);
+cInput::~cInput()
+{
+    Log("Exiting Input Module\n");
+    Log("--------------------------------------------------------\n");
 
-		Log("--------------------------------------------------------\n\n");
-	}
+    STLMapDeleteAll(m_mapActions);
 
-	//-----------------------------------------------------------------------
+    if(mpKeyboard)hplDelete(mpKeyboard);
+    if(mpMouse)hplDelete(mpMouse);
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS				
-	//////////////////////////////////////////////////////////////////////////
+    Log("--------------------------------------------------------\n\n");
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cInput::Update(float afTimeStep)
-	{
-		mpLowLevelInput->BeginInputUpdate();
-		
-		for(tInputDeviceListIt it = mlstInputDevices.begin(); it!= mlstInputDevices.end();++it)
-		{
-			(*it)->Update();
-		}
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-		mpLowLevelInput->EndInputUpdate();
+//-----------------------------------------------------------------------
 
-		for(tActionMapIt it = m_mapActions.begin(); it!= m_mapActions.end();++it)
-		{
-			it->second->Update(afTimeStep);
-		}
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cInput::AddAction(iAction *apAction)
-	{
-		tString sName = apAction->GetName();
-		tActionMap::value_type val = tActionMap::value_type(sName,apAction);
-		m_mapActions.insert(val);	
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	bool cInput::IsTriggerd(tString asName)
-	{
-		iAction *pAction = GetAction(asName);
-		if(pAction==NULL){return false;}//Log("doesn't exist!!!");return false;}
+void cInput::Update(float afTimeStep)
+{
+    mpLowLevelInput->BeginInputUpdate();
 
-		return pAction->IsTriggerd();
-	}
+    for(tInputDeviceListIt it = mlstInputDevices.begin(); it!= mlstInputDevices.end(); ++it)
+        {
+            (*it)->Update();
+        }
 
-	//-----------------------------------------------------------------------
+    mpLowLevelInput->EndInputUpdate();
 
-	bool cInput::WasTriggerd(tString asName)
-	{
-		iAction *pAction = GetAction(asName);
-		if(pAction==NULL)return false;
+    for(tActionMapIt it = m_mapActions.begin(); it!= m_mapActions.end(); ++it)
+        {
+            it->second->Update(afTimeStep);
+        }
+}
 
-		return pAction->WasTriggerd();
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-	
-	bool cInput::BecameTriggerd(tString asName)
-	{
-		iAction *pAction = GetAction(asName);
-		if(pAction==NULL)return false;
+void cInput::AddAction(iAction *apAction)
+{
+    tString sName = apAction->GetName();
+    tActionMap::value_type val = tActionMap::value_type(sName,apAction);
+    m_mapActions.insert(val);
+}
 
-		return pAction->BecameTriggerd();
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool cInput::IsTriggerd(tString asName)
+{
+    iAction *pAction = GetAction(asName);
+    if(pAction==NULL)
+        {
+            return false;
+        }//Log("doesn't exist!!!");return false;}
 
-	bool cInput::DoubleTriggerd(tString asName, float afLimit)
-	{
-		iAction *pAction = GetAction(asName);
-		if(pAction==NULL)return false;
+    return pAction->IsTriggerd();
+}
 
-		return pAction->DoubleTriggerd(afLimit);
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iKeyboard* cInput::GetKeyboard()
-	{
-		return mpKeyboard;
-	}
+bool cInput::WasTriggerd(tString asName)
+{
+    iAction *pAction = GetAction(asName);
+    if(pAction==NULL)return false;
 
-	//-----------------------------------------------------------------------
+    return pAction->WasTriggerd();
+}
 
-	iMouse* cInput::GetMouse()
-	{
-		return mpMouse;
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iAction* cInput::GetAction(tString asName)
-	{
-		tActionMapIt it = m_mapActions.find(asName);
-		if(it==m_mapActions.end())return NULL;
+bool cInput::BecameTriggerd(tString asName)
+{
+    iAction *pAction = GetAction(asName);
+    if(pAction==NULL)return false;
 
-		return it->second;
-	}
+    return pAction->BecameTriggerd();
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cInput::DestroyAction(tString asName)
-	{
-		iAction *pOldAction = GetAction(asName);
-		if(pOldAction) hplDelete(pOldAction);
-		m_mapActions.erase(asName);
-	}
+bool cInput::DoubleTriggerd(tString asName, float afLimit)
+{
+    iAction *pAction = GetAction(asName);
+    if(pAction==NULL)return false;
 
-	//-----------------------------------------------------------------------
+    return pAction->DoubleTriggerd(afLimit);
+}
 
-	bool cInput::CheckForInput()
-	{
-		//////////////////////
-		//Keyboard
-		for(int i=0; i< eKey_LastEnum; ++i)
-		{
-			if(mpKeyboard->KeyIsDown((eKey)i)) return true;
-		}
+//-----------------------------------------------------------------------
 
-		//////////////////////
-		//Mouse
-		for(int i=0; i< eMButton_LastEnum; ++i)
-		{
-			if(mpMouse->ButtonIsDown((eMButton)i)) return true;
-		}
-		
-		return false;
-	}
+iKeyboard* cInput::GetKeyboard()
+{
+    return mpKeyboard;
+}
 
-	//-----------------------------------------------------------------------
-	
-	iAction* cInput::InputToAction(const tString &asName)
-	{
-		iAction *pAction=NULL;
-		
-		//////////////////////
-		//Keyboard
-		for(int i=0; i< eKey_LastEnum; ++i)
-		{
-			if(mpKeyboard->KeyIsDown((eKey)i))
-			{
-				pAction = hplNew( cActionKeyboard, (asName,this,(eKey)i));
-				break;
-			}
-		}
+//-----------------------------------------------------------------------
 
-		//////////////////////
-		//Mouse
-		if(pAction==NULL)
-		{
-			for(int i=0; i< eMButton_LastEnum; ++i)
-			{
-				if(mpMouse->ButtonIsDown((eMButton)i))
-				{
-					pAction = hplNew( cActionMouseButton, (asName,this,(eMButton)i));					
-					break;
-				}
-			}
-		}
+iMouse* cInput::GetMouse()
+{
+    return mpMouse;
+}
 
-		if(pAction)
-		{
-			iAction *pOldAction = GetAction(asName);
-			if(pOldAction) hplDelete(pOldAction);
+//-----------------------------------------------------------------------
 
-			m_mapActions.erase(asName);
+iAction* cInput::GetAction(tString asName)
+{
+    tActionMapIt it = m_mapActions.find(asName);
+    if(it==m_mapActions.end())return NULL;
 
-			AddAction(pAction);
-		}
-		
-		return pAction;
-	}
-	
-	//-----------------------------------------------------------------------
+    return it->second;
+}
+
+//-----------------------------------------------------------------------
+
+void cInput::DestroyAction(tString asName)
+{
+    iAction *pOldAction = GetAction(asName);
+    if(pOldAction) hplDelete(pOldAction);
+    m_mapActions.erase(asName);
+}
+
+//-----------------------------------------------------------------------
+
+bool cInput::CheckForInput()
+{
+    //////////////////////
+    //Keyboard
+    for(int i=0; i< eKey_LastEnum; ++i)
+        {
+            if(mpKeyboard->KeyIsDown((eKey)i)) return true;
+        }
+
+    //////////////////////
+    //Mouse
+    for(int i=0; i< eMButton_LastEnum; ++i)
+        {
+            if(mpMouse->ButtonIsDown((eMButton)i)) return true;
+        }
+
+    return false;
+}
+
+//-----------------------------------------------------------------------
+
+iAction* cInput::InputToAction(const tString &asName)
+{
+    iAction *pAction=NULL;
+
+    //////////////////////
+    //Keyboard
+    for(int i=0; i< eKey_LastEnum; ++i)
+        {
+            if(mpKeyboard->KeyIsDown((eKey)i))
+                {
+                    pAction = hplNew( cActionKeyboard, (asName,this,(eKey)i));
+                    break;
+                }
+        }
+
+    //////////////////////
+    //Mouse
+    if(pAction==NULL)
+        {
+            for(int i=0; i< eMButton_LastEnum; ++i)
+                {
+                    if(mpMouse->ButtonIsDown((eMButton)i))
+                        {
+                            pAction = hplNew( cActionMouseButton, (asName,this,(eMButton)i));
+                            break;
+                        }
+                }
+        }
+
+    if(pAction)
+        {
+            iAction *pOldAction = GetAction(asName);
+            if(pOldAction) hplDelete(pOldAction);
+
+            m_mapActions.erase(asName);
+
+            AddAction(pAction);
+        }
+
+    return pAction;
+}
+
+//-----------------------------------------------------------------------
 
 }

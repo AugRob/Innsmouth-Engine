@@ -22,62 +22,63 @@
 #include "graphics/LowLevelGraphics.h"
 
 
-namespace hpl {
-	
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+namespace hpl
+{
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	iLight2D::iLight2D(tString asName) : iEntity2D(asName) , iLight()
-	{
+//-----------------------------------------------------------------------
 
-	}
-	
-	//-----------------------------------------------------------------------
+iLight2D::iLight2D(tString asName) : iEntity2D(asName) , iLight()
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
+}
 
-	void iLight2D::SetFarAttenuation(float afX)
-	{ 
-		mfFarAttenuation = afX;
-		if(UpdateBoundingBox())
-			if(mpGridObject)
-				mpGridObject->Update(GetBoundingBox());
-	}
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iLight2D::SetNearAttenuation(float afX)
-	{ 
-		mfNearAttenuation = afX;
-		if(mfNearAttenuation>mfFarAttenuation)
-			SetFarAttenuation(mfNearAttenuation);
-	}
-	//-----------------------------------------------------------------------
-	
-	cVector3f iLight2D::GetLightPosition()
-	{
-		return GetWorldPosition();
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void iLight2D::UpdateLogic(float afTimeStep)
-	{
-		UpdateLight(afTimeStep);
-		if(mfFadeTime>0)
-		{
-			if(UpdateBoundingBox())
-				mpGridObject->Update(mBoundingBox);
-		}
-	}
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+void iLight2D::SetFarAttenuation(float afX)
+{
+    mfFarAttenuation = afX;
+    if(UpdateBoundingBox())
+        if(mpGridObject)
+            mpGridObject->Update(GetBoundingBox());
+}
+//-----------------------------------------------------------------------
+
+void iLight2D::SetNearAttenuation(float afX)
+{
+    mfNearAttenuation = afX;
+    if(mfNearAttenuation>mfFarAttenuation)
+        SetFarAttenuation(mfNearAttenuation);
+}
+//-----------------------------------------------------------------------
+
+cVector3f iLight2D::GetLightPosition()
+{
+    return GetWorldPosition();
+}
+
+//-----------------------------------------------------------------------
+
+void iLight2D::UpdateLogic(float afTimeStep)
+{
+    UpdateLight(afTimeStep);
+    if(mfFadeTime>0)
+        {
+            if(UpdateBoundingBox())
+                mpGridObject->Update(mBoundingBox);
+        }
+}
+
+
+//-----------------------------------------------------------------------
 
 }

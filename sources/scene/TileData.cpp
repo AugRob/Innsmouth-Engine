@@ -19,142 +19,144 @@
 #include "scene/TileData.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cTileDataNormal::cTileDataNormal(cImageManager* apImageManager, cVector2f avTileSize)
-									
-	{
-		mpImageManager = apImageManager;
+cTileDataNormal::cTileDataNormal(cImageManager* apImageManager, cVector2f avTileSize)
 
-		mvImage.resize(eMaterialTexture_LastEnum);
-		mvImage.assign(mvImage.size(), NULL);
+{
+    mpImageManager = apImageManager;
 
-		mvTileSize = avTileSize;
-		mCollisionType = eTileCollisionType_Normal;
+    mvImage.resize(eMaterialTexture_LastEnum);
+    mvImage.assign(mvImage.size(), NULL);
 
-		mpMaterial=NULL;
-		mpMesh=NULL;
-		mpCollideMesh=NULL;
-	}
+    mvTileSize = avTileSize;
+    mCollisionType = eTileCollisionType_Normal;
 
-	//-----------------------------------------------------------------------
+    mpMaterial=NULL;
+    mpMesh=NULL;
+    mpCollideMesh=NULL;
+}
 
-	cTileDataNormal::~cTileDataNormal()
-	{
-	
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+cTileDataNormal::~cTileDataNormal()
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+}
 
-	//-----------------------------------------------------------------------
-	
-	tVertexVec* cTileDataNormal::GetVertexVec(eTileRotation aRotation)
-	{
-	    return mvVtx[aRotation];		
-	}
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	tUIntVec* cTileDataNormal::GetIndexVec(eTileRotation aRotation)
-	{
-		return mvIdx;
-	}
-	
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	tVertexVec* cTileDataNormal::GetCollideVertexVec(eTileRotation aRotation)
-	{
-		return mvCollideVtx[aRotation];		
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	tUIntVec* cTileDataNormal::GetCollideIndexVec(eTileRotation aRotation)
-	{
-		return mvCollideIdx;
-	}
-	
-	//-----------------------------------------------------------------------
+tVertexVec* cTileDataNormal::GetVertexVec(eTileRotation aRotation)
+{
+    return mvVtx[aRotation];
+}
+//-----------------------------------------------------------------------
 
-	void cTileDataNormal::Destroy()
-	{
-		if(mpMaterial)hplDelete(mpMaterial);
-		if(mpMesh)hplDelete(mpMesh);
-		if(mpCollideMesh)hplDelete(mpCollideMesh);
-	}
+tUIntVec* cTileDataNormal::GetIndexVec(eTileRotation aRotation)
+{
+    return mvIdx;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cTileDataNormal::SetData(cMesh2D *apMesh, iMaterial* apMaterial)
-	{
-		SetMaterial(apMaterial);
-		SetMesh(apMesh); //Note that material must be set before mesh.
-	}
-	//-----------------------------------------------------------------------
+tVertexVec* cTileDataNormal::GetCollideVertexVec(eTileRotation aRotation)
+{
+    return mvCollideVtx[aRotation];
+}
 
-	cMesh2D* cTileDataNormal::GetCollideMesh()
-	{
-		//if(mpCollideMesh==NULL) return mpMesh;
+//-----------------------------------------------------------------------
 
-		return mpCollideMesh;
-	}
+tUIntVec* cTileDataNormal::GetCollideIndexVec(eTileRotation aRotation)
+{
+    return mvCollideIdx;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void  cTileDataNormal::SetCollideMesh(cMesh2D *apCollideMesh)
-	{ 
-		mpCollideMesh = apCollideMesh;
+void cTileDataNormal::Destroy()
+{
+    if(mpMaterial)hplDelete(mpMaterial);
+    if(mpMesh)hplDelete(mpMesh);
+    if(mpCollideMesh)hplDelete(mpCollideMesh);
+}
 
-		for(int i=0;i<eTileRotation_LastEnum;i++)
-		{
-			mvCollideVtx[i] = mpCollideMesh->GetVertexVec(cRect2f(0,0,1,1),mvTileSize,(eTileRotation)i);
-		}
+//-----------------------------------------------------------------------
 
-		mvCollideIdx = mpCollideMesh->GetIndexVec();
-	}
-	
-	//-----------------------------------------------------------------------
+void cTileDataNormal::SetData(cMesh2D *apMesh, iMaterial* apMaterial)
+{
+    SetMaterial(apMaterial);
+    SetMesh(apMesh); //Note that material must be set before mesh.
+}
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
-	
-	void cTileDataNormal::SetMesh(cMesh2D *apMesh){
-		mpMesh = apMesh;
+cMesh2D* cTileDataNormal::GetCollideMesh()
+{
+    //if(mpCollideMesh==NULL) return mpMesh;
 
-		mpMesh->CreateTileVertexVec();
+    return mpCollideMesh;
+}
 
-		if(mpMaterial)
-		{
-			cRect2f ImageRect = mpMaterial->GetTextureOffset(eMaterialTexture_Diffuse);
+//-----------------------------------------------------------------------
 
-			for(int i=0;i<eTileRotation_LastEnum;i++)
-			{
-				mvVtx[i] = mpMesh->GetVertexVec(ImageRect,mvTileSize,(eTileRotation)i);
-			}
-			
-			mvIdx = mpMesh->GetIndexVec();
-		}
-	}
+void  cTileDataNormal::SetCollideMesh(cMesh2D *apCollideMesh)
+{
+    mpCollideMesh = apCollideMesh;
 
-	//-----------------------------------------------------------------------
+    for(int i=0; i<eTileRotation_LastEnum; i++)
+        {
+            mvCollideVtx[i] = mpCollideMesh->GetVertexVec(cRect2f(0,0,1,1),mvTileSize,(eTileRotation)i);
+        }
 
-	void cTileDataNormal::SetMaterial(iMaterial *apMaterial)
-	{
-		mpMaterial = apMaterial;
-	}
-	
-	//-----------------------------------------------------------------------
+    mvCollideIdx = mpCollideMesh->GetIndexVec();
+}
+
+//-----------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
+
+void cTileDataNormal::SetMesh(cMesh2D *apMesh)
+{
+    mpMesh = apMesh;
+
+    mpMesh->CreateTileVertexVec();
+
+    if(mpMaterial)
+        {
+            cRect2f ImageRect = mpMaterial->GetTextureOffset(eMaterialTexture_Diffuse);
+
+            for(int i=0; i<eTileRotation_LastEnum; i++)
+                {
+                    mvVtx[i] = mpMesh->GetVertexVec(ImageRect,mvTileSize,(eTileRotation)i);
+                }
+
+            mvIdx = mpMesh->GetIndexVec();
+        }
+}
+
+//-----------------------------------------------------------------------
+
+void cTileDataNormal::SetMaterial(iMaterial *apMaterial)
+{
+    mpMaterial = apMaterial;
+}
+
+//-----------------------------------------------------------------------
 
 }

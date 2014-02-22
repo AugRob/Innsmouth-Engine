@@ -32,409 +32,416 @@
 
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cImageEntity::cImageEntity(tString asName,cResources* apResources, cGraphics* apGraphics, 
-								bool abAutoDeleteData) 
-	: iEntity2D(asName)
-	{
-		mvSize =cVector2f(-1,-1);
+cImageEntity::cImageEntity(tString asName,cResources* apResources, cGraphics* apGraphics,
+                           bool abAutoDeleteData)
+    : iEntity2D(asName)
+{
+    mvSize =cVector2f(-1,-1);
 
-		mbFlipH=false;
-		mbFlipV=false;
+    mbFlipH=false;
+    mbFlipV=false;
 
-		mpAnimation =NULL;
-		mfFrameNum =0;
-		mfAnimSpeed = 0.5f;
-		mlFrame=0;
-		mlLastFrame=-1;
+    mpAnimation =NULL;
+    mfFrameNum =0;
+    mfAnimSpeed = 0.5f;
+    mlFrame=0;
+    mlLastFrame=-1;
 
-		mbFlashing = false;
+    mbFlashing = false;
 
-		mfAlpha = 1.0f;
+    mfAlpha = 1.0f;
 
-		mpEntityData = NULL;
+    mpEntityData = NULL;
 
-		mpResources = apResources;
-		mpGraphics = apGraphics;
+    mpResources = apResources;
+    mpGraphics = apGraphics;
 
-		UpdateBoundingBox();
+    UpdateBoundingBox();
 
-		msTempString = "Default";
+    msTempString = "Default";
 
-		mbAnimationPaused=false;
-		mbRotationHasChanged = true;
+    mbAnimationPaused=false;
+    mbRotationHasChanged = true;
 
-		mbAutoDeleteData = abAutoDeleteData;
+    mbAutoDeleteData = abAutoDeleteData;
 
-		mbLoopAnimation = true;
-	}
+    mbLoopAnimation = true;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cImageEntity::~cImageEntity()
-	{
-		if(mbAutoDeleteData)
-		{
-			if(mpEntityData)mpResources->GetImageEntityManager()->Destroy(mpEntityData);
-		}
-	}
+cImageEntity::~cImageEntity()
+{
+    if(mbAutoDeleteData)
+        {
+            if(mpEntityData)mpResources->GetImageEntityManager()->Destroy(mpEntityData);
+        }
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
-	int cImageEntity::GetMaxFrameNum()
-	{
-		if(mpAnimation==NULL)return 0;
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-		//One for the -1, one for the frame jump, and one becuase we start with 0.
-		return (int)mpAnimation->mvFrameNums.size()-3;
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	bool cImageEntity::SetAnimation(const tString& asName, bool abLoop)
-	{
-		mbLoopAnimation = abLoop;
+//-----------------------------------------------------------------------
+int cImageEntity::GetMaxFrameNum()
+{
+    if(mpAnimation==NULL)return 0;
 
-		if(mpAnimation->msName == asName)return true;
+    //One for the -1, one for the frame jump, and one becuase we start with 0.
+    return (int)mpAnimation->mvFrameNums.size()-3;
+}
 
-		cImageAnimation *pAnim = mpEntityData->GetAnimationByName(asName);
-		if(pAnim==NULL)return false;
+//-----------------------------------------------------------------------
 
-		mpAnimation = pAnim;
-		mfFrameNum =0;
-		return true;
-	}
-	
-	//-----------------------------------------------------------------------
+bool cImageEntity::SetAnimation(const tString& asName, bool abLoop)
+{
+    mbLoopAnimation = abLoop;
 
-	const tString& cImageEntity::GetCurrentAnimation() const
-	{
-		if(mpAnimation==NULL){
-			return msTempString;
-		}
+    if(mpAnimation->msName == asName)return true;
 
-		return mpAnimation->msName;
-	}
-	//-----------------------------------------------------------------------
-	
-	void cImageEntity::StopAnimation()
-	{
-		for(int i=0;i<(int)mpAnimation->mvFrameNums.size();i++)
-		{
-			if(mpAnimation->mvFrameNums[i]==-1){
-				mlFrame = i;
-				mlLastFrame = i;
-				mfFrameNum = (float)i;
-				break;
-			}
-		}
-		if(mbLoopAnimation)mbLoopAnimation = false;
-	}
+    cImageAnimation *pAnim = mpEntityData->GetAnimationByName(asName);
+    if(pAnim==NULL)return false;
 
-	//-----------------------------------------------------------------------
+    mpAnimation = pAnim;
+    mfFrameNum =0;
+    return true;
+}
 
-	void cImageEntity::SetSize(const cVector2f& avSize)
-	{
-		if(avSize.x == mvSize.x && avSize.y== mvSize.y)return;
-		
-		mvSize.x = avSize.x==0?0.001f:avSize.x;
-		mvSize.y = avSize.y==0?0.001f:avSize.y;
+//-----------------------------------------------------------------------
 
-        mbSizeHasChanged = true;
-		mbRotationHasChanged = true;
-	}
+const tString& cImageEntity::GetCurrentAnimation() const
+{
+    if(mpAnimation==NULL)
+        {
+            return msTempString;
+        }
 
-	//-----------------------------------------------------------------------
+    return mpAnimation->msName;
+}
+//-----------------------------------------------------------------------
 
-	void cImageEntity::SetFlipH(bool abX)
-	{
-		if(mbFlipH == abX)return;
+void cImageEntity::StopAnimation()
+{
+    for(int i=0; i<(int)mpAnimation->mvFrameNums.size(); i++)
+        {
+            if(mpAnimation->mvFrameNums[i]==-1)
+                {
+                    mlFrame = i;
+                    mlLastFrame = i;
+                    mfFrameNum = (float)i;
+                    break;
+                }
+        }
+    if(mbLoopAnimation)mbLoopAnimation = false;
+}
 
-        mbFlipH = abX;
-		mbRotationHasChanged=true;
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cImageEntity::SetFlipV(bool abX)
-	{
-		if(mbFlipV == abX)return;
+//-----------------------------------------------------------------------
 
-		mbFlipV = abX;
-		mbRotationHasChanged=true;
-	}
-		
-	//-----------------------------------------------------------------------
-	
-	void cImageEntity::UpdateLogic(float afTimeStep)
-	{
-		if(mbFlashing)
-		{
-			float fAlpha = GetAlpha();
-			if(mfFlashAdd<0)
-			{
-				fAlpha += mfFlashAdd*7;
-				if(fAlpha<0){
-					fAlpha =0;
-					mfFlashAdd = -mfFlashAdd;
-				}
-				SetAlpha(fAlpha);
-			}
-			else
-			{
-				fAlpha += mfFlashAdd;
-				if(fAlpha>1){
-					fAlpha =1;
-					mbFlashing = false;
-				}
-				SetAlpha(fAlpha);
-			}
-		}
-		
-		if(mpAnimation && !mbAnimationPaused)
-		{
-			if(mpAnimation->mvFrameNums[(int)mfFrameNum]!=-1)
-			{
-				mfFrameNum+=mfAnimSpeed*mpAnimation->mfSpeed; 
+void cImageEntity::SetSize(const cVector2f& avSize)
+{
+    if(avSize.x == mvSize.x && avSize.y== mvSize.y)return;
 
-				int lFrameNum = (int) mfFrameNum;
+    mvSize.x = avSize.x==0?0.001f:avSize.x;
+    mvSize.y = avSize.y==0?0.001f:avSize.y;
 
-				if(mpAnimation->mvFrameNums[lFrameNum]==-1)
-				{
-					if(mbLoopAnimation)
-					{
-						float fTemp = (float)mpAnimation->mvFrameNums[lFrameNum+1];
-						
-						mfFrameNum = fTemp + cMath::GetFraction(mfFrameNum);
-					}
-				}
-			}
-		}
-	}
+    mbSizeHasChanged = true;
+    mbRotationHasChanged = true;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cImageEntity::AnimationIsPlaying()
-	{
-		int lFrameNum = (int)mfFrameNum;
-		return mpAnimation->mvFrameNums[lFrameNum]!=-1;
-	}
-	
-	//-----------------------------------------------------------------------
+void cImageEntity::SetFlipH(bool abX)
+{
+    if(mbFlipH == abX)return;
 
-	void cImageEntity::Render()
-	{
-		if(!mbIsActive)return;
-		
-		/*Update frame stuff if needed here*/
-		
-		mvTransform = GetWorldPosition();
-		
-		/// Get the frame to be used //////////////
-		if(mpEntityData->GetFrameNum()==1)
-		{
-			mlFrame=0;
-			mlLastFrame=0;
-		}
-		else
-		{
-			mlLastFrame = mlFrame;
-			mlFrame = mpAnimation->mvFrameNums[(int)mfFrameNum];
-			
-			if(mlFrame==-1) mlFrame = mpAnimation->mvFrameNums[((int)mfFrameNum)-1];
-						
-			/// If Frame has changed update vertexes 
-			if(mlLastFrame != mlFrame)
-			{
-				tVertexVec* pVtx = &mpEntityData->GetImageFrame(mlFrame)->mvVtx;
+    mbFlipH = abX;
+    mbRotationHasChanged=true;
+}
 
-                for(int i=0; i<(int)pVtx->size();i++)
-				{
-					mvVtx[i].tex.x = (*pVtx)[i].tex.x;
-					mvVtx[i].tex.y = (*pVtx)[i].tex.y;
-					mvVtx[i].tex.z = (*pVtx)[i].tex.z;
-				}
-			}
-		}
-		
+//-----------------------------------------------------------------------
 
-		if(mbSizeHasChanged)
-		{
-			for(int i=0;i<(int)mvBaseVtx.size();i++)
-			{
-				//Slow as hell!! Change this perhaps?
-				//This also only works on square meshes...
-				mvBaseVtx[i].pos.x = std::abs(mvBaseVtx[i].pos.x)/mvBaseVtx[i].pos.x;
-				mvBaseVtx[i].pos.y = std::abs(mvBaseVtx[i].pos.y)/mvBaseVtx[i].pos.y;
-				
-				mvBaseVtx[i].pos.x *= mvSize.x/2;
-				mvBaseVtx[i].pos.y *= mvSize.y/2;
-				mvBaseVtx[i].pos.z = 0;
-			}
-		}
+void cImageEntity::SetFlipV(bool abX)
+{
+    if(mbFlipV == abX)return;
 
-		/// If rotation or frame has changed, update the vertexes
-		if(mbRotationHasChanged || mfCurrentAngle != GetWorldRotation().z)
-		{
-			mbRotationHasChanged = false;
-			mfCurrentAngle = GetWorldRotation().z;
+    mbFlipV = abX;
+    mbRotationHasChanged=true;
+}
 
-			float fSin = sin(mfCurrentAngle);
-			float fCos = cos(mfCurrentAngle);
+//-----------------------------------------------------------------------
 
-			float fNormZ=3;
-			if(mbFlipV)fNormZ = 1;
-			if(mbFlipH)fNormZ *= -1;
-			
-			for(int i=0;i<(int)mvVtx.size();i++)
-			{
-				mvVtx[i].pos.x = mvBaseVtx[i].pos.x*fCos - mvBaseVtx[i].pos.y*fSin;
-				mvVtx[i].pos.y = mvBaseVtx[i].pos.x*fSin + mvBaseVtx[i].pos.y*fCos;
+void cImageEntity::UpdateLogic(float afTimeStep)
+{
+    if(mbFlashing)
+        {
+            float fAlpha = GetAlpha();
+            if(mfFlashAdd<0)
+                {
+                    fAlpha += mfFlashAdd*7;
+                    if(fAlpha<0)
+                        {
+                            fAlpha =0;
+                            mfFlashAdd = -mfFlashAdd;
+                        }
+                    SetAlpha(fAlpha);
+                }
+            else
+                {
+                    fAlpha += mfFlashAdd;
+                    if(fAlpha>1)
+                        {
+                            fAlpha =1;
+                            mbFlashing = false;
+                        }
+                    SetAlpha(fAlpha);
+                }
+        }
 
-				if(mbFlipH) mvVtx[i].pos.x = -mvVtx[i].pos.x;
-				if(mbFlipV) mvVtx[i].pos.y = -mvVtx[i].pos.y;
-			
-				mvVtx[i].norm.x = fCos;
-				mvVtx[i].norm.y = fSin;
-				mvVtx[i].norm.z = fNormZ;
-			}
-		}
-		cRenderObject2D _obj = cRenderObject2D(
-			mpEntityData->GetImageFrame(mlFrame)->mpMaterial,
-			&mvVtx,&mvIdxVec,
-			ePrimitiveType_Quad, GetWorldPosition().z,
-			mBoundingBox, NULL, &mvTransform);
-		// Add the render object.
-		mpGraphics->GetRenderer2D()->AddObject(_obj);		
+    if(mpAnimation && !mbAnimationPaused)
+        {
+            if(mpAnimation->mvFrameNums[(int)mfFrameNum]!=-1)
+                {
+                    mfFrameNum+=mfAnimSpeed*mpAnimation->mfSpeed;
 
-	}
-	
-	//-----------------------------------------------------------------------
+                    int lFrameNum = (int) mfFrameNum;
 
-	bool cImageEntity::LoadData(TiXmlElement* apRootElem)
-	{
-		tString sDataName = cString::ToString(apRootElem->Attribute("DataName"),"");
-		
-		mbFlipH = cString::ToBool(apRootElem->Attribute("FlipH"),false);
-		mbFlipV = cString::ToBool(apRootElem->Attribute("FlipV"),false);
-		mvRotation.z = cMath::ToRad(cString::ToFloat(apRootElem->Attribute("Angle"),0));
-		mvSize.x = cString::ToFloat(apRootElem->Attribute("Width"),2);
-		mvSize.y = cString::ToFloat(apRootElem->Attribute("Height"),2);
-		int lAnimNum = cString::ToInt(apRootElem->Attribute("AnimNum"),0);
+                    if(mpAnimation->mvFrameNums[lFrameNum]==-1)
+                        {
+                            if(mbLoopAnimation)
+                                {
+                                    float fTemp = (float)mpAnimation->mvFrameNums[lFrameNum+1];
 
-		return LoadEntityData(sDataName, lAnimNum);
-	}
+                                    mfFrameNum = fTemp + cMath::GetFraction(mfFrameNum);
+                                }
+                        }
+                }
+        }
+}
 
-	//-----------------------------------------------------------------------
-	bool cImageEntity::LoadEntityData(tString asDataName, int alAnimNum)
-	{
-		cImageEntityData* pImageData = mpResources->GetImageEntityManager()->CreateData(asDataName);
+//-----------------------------------------------------------------------
 
-		if(pImageData==NULL){
-			FatalError("Couldn't load Data '%s' for entity '%s'!",asDataName.c_str(), msName.c_str());
-			return false;
-		}
+bool cImageEntity::AnimationIsPlaying()
+{
+    int lFrameNum = (int)mfFrameNum;
+    return mpAnimation->mvFrameNums[lFrameNum]!=-1;
+}
 
-		return LoadEntityData(pImageData, alAnimNum);
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cImageEntity::LoadEntityData(cImageEntityData* apData, int alAnimNum)
-	{
-		mpEntityData = apData;
+void cImageEntity::Render()
+{
+    if(!mbIsActive)return;
 
-		if(mpEntityData->GetFrameNum()>1){
-			mpAnimation = mpEntityData->GetAnimationByHandle(alAnimNum);
-			mlFrame = mpAnimation->mvFrameNums[0];
-			mlLastFrame = -1;
-		}
-		else
-		{
-			mlFrame = 0;
-		}
+    /*Update frame stuff if needed here*/
 
-		mvBaseVtx = mpEntityData->GetImageFrame(mlFrame)->mvVtx;
+    mvTransform = GetWorldPosition();
 
-		if(mvSize.x <0 && mvSize.y<0)
-		{
-			mvSize = mpEntityData->GetImageSize();
-		}
-		
-		mvVtx = mvBaseVtx;
-		mvIdxVec = *mpEntityData->GetIndexVec();
-		mbRotationHasChanged = true;
-		mbSizeHasChanged = true;
-		mfCurrentAngle =0;
-		
-		return true;
-	}
-	
-	//-----------------------------------------------------------------------
+    /// Get the frame to be used //////////////
+    if(mpEntityData->GetFrameNum()==1)
+        {
+            mlFrame=0;
+            mlLastFrame=0;
+        }
+    else
+        {
+            mlLastFrame = mlFrame;
+            mlFrame = mpAnimation->mvFrameNums[(int)mfFrameNum];
 
-	const cRect2f& cImageEntity::GetBoundingBox()
-	{
-		return mBoundingBox;
-	}
+            if(mlFrame==-1) mlFrame = mpAnimation->mvFrameNums[((int)mfFrameNum)-1];
 
-	//-----------------------------------------------------------------------
+            /// If Frame has changed update vertexes
+            if(mlLastFrame != mlFrame)
+                {
+                    tVertexVec* pVtx = &mpEntityData->GetImageFrame(mlFrame)->mvVtx;
 
-	bool cImageEntity::UpdateBoundingBox()
-	{
-		cVector2f vSize;
-		
-		if(mvRotation.z != 0)
-		{
-			//Only Temp...
-			float fMaxSize = sqrt(mvSize.x*mvSize.x + mvSize.y*mvSize.y);
+                    for(int i=0; i<(int)pVtx->size(); i++)
+                        {
+                            mvVtx[i].tex.x = (*pVtx)[i].tex.x;
+                            mvVtx[i].tex.y = (*pVtx)[i].tex.y;
+                            mvVtx[i].tex.z = (*pVtx)[i].tex.z;
+                        }
+                }
+        }
 
-			vSize.x = fMaxSize;
-			vSize.y = fMaxSize;
-		}
-		else
-		{
-			vSize = mvSize;
-		}
-		
-		mBoundingBox = cRect2f(cVector2f(GetWorldPosition().x-vSize.x/2,
-										GetWorldPosition().y-vSize.y/2),vSize);
 
-		return true;
-	}
-	//-----------------------------------------------------------------------
-	
-	void cImageEntity::SetAlpha(float afX)
-	{
-		if(mfAlpha != afX)
-		{
-			mfAlpha = afX;
-            
-			for(int i=0;i<(int)mvVtx.size();i++)
-			{
-				mvVtx[i].col.a = mfAlpha;
-			}
-		}
-	}
+    if(mbSizeHasChanged)
+        {
+            for(int i=0; i<(int)mvBaseVtx.size(); i++)
+                {
+                    //Slow as hell!! Change this perhaps?
+                    //This also only works on square meshes...
+                    mvBaseVtx[i].pos.x = std::abs(mvBaseVtx[i].pos.x)/mvBaseVtx[i].pos.x;
+                    mvBaseVtx[i].pos.y = std::abs(mvBaseVtx[i].pos.y)/mvBaseVtx[i].pos.y;
 
-	//-----------------------------------------------------------------------
+                    mvBaseVtx[i].pos.x *= mvSize.x/2;
+                    mvBaseVtx[i].pos.y *= mvSize.y/2;
+                    mvBaseVtx[i].pos.z = 0;
+                }
+        }
 
-	void cImageEntity::Flash(float afAdd)
-	{
-		mbFlashing = true;
-		mfFlashAdd = -std::abs(afAdd);
-	}
+    /// If rotation or frame has changed, update the vertexes
+    if(mbRotationHasChanged || mfCurrentAngle != GetWorldRotation().z)
+        {
+            mbRotationHasChanged = false;
+            mfCurrentAngle = GetWorldRotation().z;
 
-	//-----------------------------------------------------------------------
+            float fSin = sin(mfCurrentAngle);
+            float fCos = cos(mfCurrentAngle);
+
+            float fNormZ=3;
+            if(mbFlipV)fNormZ = 1;
+            if(mbFlipH)fNormZ *= -1;
+
+            for(int i=0; i<(int)mvVtx.size(); i++)
+                {
+                    mvVtx[i].pos.x = mvBaseVtx[i].pos.x*fCos - mvBaseVtx[i].pos.y*fSin;
+                    mvVtx[i].pos.y = mvBaseVtx[i].pos.x*fSin + mvBaseVtx[i].pos.y*fCos;
+
+                    if(mbFlipH) mvVtx[i].pos.x = -mvVtx[i].pos.x;
+                    if(mbFlipV) mvVtx[i].pos.y = -mvVtx[i].pos.y;
+
+                    mvVtx[i].norm.x = fCos;
+                    mvVtx[i].norm.y = fSin;
+                    mvVtx[i].norm.z = fNormZ;
+                }
+        }
+    cRenderObject2D _obj = cRenderObject2D(
+                               mpEntityData->GetImageFrame(mlFrame)->mpMaterial,
+                               &mvVtx,&mvIdxVec,
+                               ePrimitiveType_Quad, GetWorldPosition().z,
+                               mBoundingBox, NULL, &mvTransform);
+    // Add the render object.
+    mpGraphics->GetRenderer2D()->AddObject(_obj);
+
+}
+
+//-----------------------------------------------------------------------
+
+bool cImageEntity::LoadData(TiXmlElement* apRootElem)
+{
+    tString sDataName = cString::ToString(apRootElem->Attribute("DataName"),"");
+
+    mbFlipH = cString::ToBool(apRootElem->Attribute("FlipH"),false);
+    mbFlipV = cString::ToBool(apRootElem->Attribute("FlipV"),false);
+    mvRotation.z = cMath::ToRad(cString::ToFloat(apRootElem->Attribute("Angle"),0));
+    mvSize.x = cString::ToFloat(apRootElem->Attribute("Width"),2);
+    mvSize.y = cString::ToFloat(apRootElem->Attribute("Height"),2);
+    int lAnimNum = cString::ToInt(apRootElem->Attribute("AnimNum"),0);
+
+    return LoadEntityData(sDataName, lAnimNum);
+}
+
+//-----------------------------------------------------------------------
+bool cImageEntity::LoadEntityData(tString asDataName, int alAnimNum)
+{
+    cImageEntityData* pImageData = mpResources->GetImageEntityManager()->CreateData(asDataName);
+
+    if(pImageData==NULL)
+        {
+            FatalError("Couldn't load Data '%s' for entity '%s'!",asDataName.c_str(), msName.c_str());
+            return false;
+        }
+
+    return LoadEntityData(pImageData, alAnimNum);
+}
+
+//-----------------------------------------------------------------------
+
+bool cImageEntity::LoadEntityData(cImageEntityData* apData, int alAnimNum)
+{
+    mpEntityData = apData;
+
+    if(mpEntityData->GetFrameNum()>1)
+        {
+            mpAnimation = mpEntityData->GetAnimationByHandle(alAnimNum);
+            mlFrame = mpAnimation->mvFrameNums[0];
+            mlLastFrame = -1;
+        }
+    else
+        {
+            mlFrame = 0;
+        }
+
+    mvBaseVtx = mpEntityData->GetImageFrame(mlFrame)->mvVtx;
+
+    if(mvSize.x <0 && mvSize.y<0)
+        {
+            mvSize = mpEntityData->GetImageSize();
+        }
+
+    mvVtx = mvBaseVtx;
+    mvIdxVec = *mpEntityData->GetIndexVec();
+    mbRotationHasChanged = true;
+    mbSizeHasChanged = true;
+    mfCurrentAngle =0;
+
+    return true;
+}
+
+//-----------------------------------------------------------------------
+
+const cRect2f& cImageEntity::GetBoundingBox()
+{
+    return mBoundingBox;
+}
+
+//-----------------------------------------------------------------------
+
+bool cImageEntity::UpdateBoundingBox()
+{
+    cVector2f vSize;
+
+    if(mvRotation.z != 0)
+        {
+            //Only Temp...
+            float fMaxSize = sqrt(mvSize.x*mvSize.x + mvSize.y*mvSize.y);
+
+            vSize.x = fMaxSize;
+            vSize.y = fMaxSize;
+        }
+    else
+        {
+            vSize = mvSize;
+        }
+
+    mBoundingBox = cRect2f(cVector2f(GetWorldPosition().x-vSize.x/2,
+                                     GetWorldPosition().y-vSize.y/2),vSize);
+
+    return true;
+}
+//-----------------------------------------------------------------------
+
+void cImageEntity::SetAlpha(float afX)
+{
+    if(mfAlpha != afX)
+        {
+            mfAlpha = afX;
+
+            for(int i=0; i<(int)mvVtx.size(); i++)
+                {
+                    mvVtx[i].col.a = mfAlpha;
+                }
+        }
+}
+
+//-----------------------------------------------------------------------
+
+void cImageEntity::Flash(float afAdd)
+{
+    mbFlashing = true;
+    mfFlashAdd = -std::abs(afAdd);
+}
+
+//-----------------------------------------------------------------------
 }

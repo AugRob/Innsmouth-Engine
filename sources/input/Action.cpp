@@ -19,110 +19,115 @@
 #include "input/Action.h"
 #include "system/LowLevelSystem.h"
 
-namespace hpl {
-	
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+namespace hpl
+{
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	iAction::iAction(tString asName)
-	{
-		msName = asName;
+//-----------------------------------------------------------------------
 
-		mbBecameTriggerd= false;
-		mbIsTriggerd = false;
+iAction::iAction(tString asName)
+{
+    msName = asName;
 
-		mfTimeCount = -1.0;
+    mbBecameTriggerd= false;
+    mbIsTriggerd = false;
 
-		mbTriggerDown = false;
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+    mfTimeCount = -1.0;
 
-	//-----------------------------------------------------------------------
+    mbTriggerDown = false;
+}
 
-	bool iAction::WasTriggerd()
-	{
-		if(mbBecameTriggerd && !IsTriggerd()){
-			mbBecameTriggerd=false;
-			return true;
-		}
+//-----------------------------------------------------------------------
 
-		return false;
-	}
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	bool iAction::BecameTriggerd()
-	{
-		if(!mbIsTriggerd && IsTriggerd()){
-			mbIsTriggerd=true;
-			return true;
-		}
+//-----------------------------------------------------------------------
 
-		return false;
-	}
+bool iAction::WasTriggerd()
+{
+    if(mbBecameTriggerd && !IsTriggerd())
+        {
+            mbBecameTriggerd=false;
+            return true;
+        }
 
-	//-----------------------------------------------------------------------
+    return false;
+}
 
-	bool iAction::DoubleTriggerd(float afLimit)
-	{
-		if(!mbTriggerDown && IsTriggerd())
-		{
-			mbTriggerDown=true;
+//-----------------------------------------------------------------------
 
-			if(mfTimeCount <0 || mfTimeCount > afLimit)
-			{
-				mfTimeCount =0;
-				return false;
-			}
-			else
-			{
-				mfTimeCount =0;
-				mbIsTriggerd=true;
-				return true;
-			}
-		}
+bool iAction::BecameTriggerd()
+{
+    if(!mbIsTriggerd && IsTriggerd())
+        {
+            mbIsTriggerd=true;
+            return true;
+        }
 
-		return false;
-	}
+    return false;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iAction::Update(float afTimeStep)
-	{
-		UpdateLogic(afTimeStep);
+bool iAction::DoubleTriggerd(float afLimit)
+{
+    if(!mbTriggerDown && IsTriggerd())
+        {
+            mbTriggerDown=true;
 
-		if(!IsTriggerd()){
-			mbIsTriggerd=false;
-			mbTriggerDown = false;
+            if(mfTimeCount <0 || mfTimeCount > afLimit)
+                {
+                    mfTimeCount =0;
+                    return false;
+                }
+            else
+                {
+                    mfTimeCount =0;
+                    mbIsTriggerd=true;
+                    return true;
+                }
+        }
 
-			if(mfTimeCount >= 0) mfTimeCount += afTimeStep;
-		}
-		else {
-			mbBecameTriggerd=true;
-		}
-	}
+    return false;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iAction::UpdateLogic(float afTimeStep)
-	{
-	}
+void iAction::Update(float afTimeStep)
+{
+    UpdateLogic(afTimeStep);
 
-	//-----------------------------------------------------------------------
+    if(!IsTriggerd())
+        {
+            mbIsTriggerd=false;
+            mbTriggerDown = false;
 
-	tString iAction::GetName()
-	{
-		return msName;
-	}
-	
-	//-----------------------------------------------------------------------
+            if(mfTimeCount >= 0) mfTimeCount += afTimeStep;
+        }
+    else
+        {
+            mbBecameTriggerd=true;
+        }
+}
+
+//-----------------------------------------------------------------------
+
+void iAction::UpdateLogic(float afTimeStep)
+{
+}
+
+//-----------------------------------------------------------------------
+
+tString iAction::GetName()
+{
+    return msName;
+}
+
+//-----------------------------------------------------------------------
 
 }

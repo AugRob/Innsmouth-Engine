@@ -19,137 +19,139 @@
 #include "scene/Node.h"
 #include "system/LowLevelSystem.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	iNode::~iNode()
-	{
-		for(tEntityListIt it = mlstEntity.begin();it != mlstEntity.end();it++)
-		{
-			iEntity *pEntity = *it;
-			pEntity->SetParent(NULL);
-		}
-		mlstEntity.clear();
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+iNode::~iNode()
+{
+    for(tEntityListIt it = mlstEntity.begin(); it != mlstEntity.end(); it++)
+        {
+            iEntity *pEntity = *it;
+            pEntity->SetParent(NULL);
+        }
+    mlstEntity.clear();
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	int iNode::SetVisible(bool abX, bool abCascade)
-	{
-		int lNum=0;
-		for(tEntityListIt it = mlstEntity.begin();it != mlstEntity.end();it++)
-		{
-			(*it)->SetVisible(abX);
-			lNum++;
-		}
+//-----------------------------------------------------------------------
 
-		if(abCascade)
-		{
-			for(tNodeListIt NIt = mlstNode.begin(); NIt != mlstNode.end(); NIt++)
-			{
-				(*NIt)->SetVisible(abX,abCascade);
-			}
-		}
-		return lNum;
-	}
+int iNode::SetVisible(bool abX, bool abCascade)
+{
+    int lNum=0;
+    for(tEntityListIt it = mlstEntity.begin(); it != mlstEntity.end(); it++)
+        {
+            (*it)->SetVisible(abX);
+            lNum++;
+        }
 
-	//-----------------------------------------------------------------------
+    if(abCascade)
+        {
+            for(tNodeListIt NIt = mlstNode.begin(); NIt != mlstNode.end(); NIt++)
+                {
+                    (*NIt)->SetVisible(abX,abCascade);
+                }
+        }
+    return lNum;
+}
 
-	bool iNode::AddEntity(iEntity* apEntity)
-	{
-		if(apEntity->HasParent())return false;
-				
-		mlstEntity.push_back(apEntity);
-		apEntity->SetParent(this);
+//-----------------------------------------------------------------------
 
-		return true;
-	}
+bool iNode::AddEntity(iEntity* apEntity)
+{
+    if(apEntity->HasParent())return false;
 
-	//-----------------------------------------------------------------------
+    mlstEntity.push_back(apEntity);
+    apEntity->SetParent(this);
 
-	bool iNode::RemoveEntity(iEntity* apEntity)
-	{
-		for(tEntityListIt it = mlstEntity.begin();it != mlstEntity.end();it++)
-		{
-			if(*it == apEntity){
-				apEntity->SetParent(NULL);
-				mlstEntity.erase(it);
-				return true;
-			}
-		}
+    return true;
+}
 
-		return false;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool iNode::RemoveEntity(iEntity* apEntity)
+{
+    for(tEntityListIt it = mlstEntity.begin(); it != mlstEntity.end(); it++)
+        {
+            if(*it == apEntity)
+                {
+                    apEntity->SetParent(NULL);
+                    mlstEntity.erase(it);
+                    return true;
+                }
+        }
 
-	void iNode::ClearEntities()
-	{
-		mlstEntity.clear();
-	}
+    return false;
+}
 
-	//-----------------------------------------------------------------------
-	
-	cNodeIterator iNode::GetChildIterator()
-	{
-		return cNodeIterator(&mlstNode);
-	}
+//-----------------------------------------------------------------------
 
-	cEntityIterator iNode::GetEntityIterator()
-	{
-		return cEntityIterator(&mlstEntity);
-	}	
-	//-----------------------------------------------------------------------
+void iNode::ClearEntities()
+{
+    mlstEntity.clear();
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE OBJECT STUFF
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-	
-	kBeginSerializeVirtual(cSaveData_iNode, iSaveData)
-	kSerializeVarContainer(mlstEntities, eSerializeType_Int32)
-	kSerializeVarContainer(mlstNodes, eSerializeType_Int32)
-	kEndSerialize()
-	
-	//-----------------------------------------------------------------------
+cNodeIterator iNode::GetChildIterator()
+{
+    return cNodeIterator(&mlstNode);
+}
 
-	void iNode::SaveToSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_SaveToBegin(iNode);
+cEntityIterator iNode::GetEntityIterator()
+{
+    return cEntityIterator(&mlstEntity);
+}
+//-----------------------------------------------------------------------
 
-		kSaveData_SaveIdList(mlstEntity,tEntityListIt,mlstEntities);
-		kSaveData_SaveIdList(mlstNode,tNodeListIt,mlstNodes);
-	}
+//////////////////////////////////////////////////////////////////////////
+// SAVE OBJECT STUFF
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iNode::LoadFromSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_LoadFromBegin(iNode);
-	}
+kBeginSerializeVirtual(cSaveData_iNode, iSaveData)
+kSerializeVarContainer(mlstEntities, eSerializeType_Int32)
+kSerializeVarContainer(mlstNodes, eSerializeType_Int32)
+kEndSerialize()
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iNode::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
-	{
-		kSaveData_SetupBegin(iNode);
+void iNode::SaveToSaveData(iSaveData *apSaveData)
+{
+    kSaveData_SaveToBegin(iNode);
 
-		kSaveData_LoadIdList(mlstEntity,mlstEntities, iEntity*);
-		kSaveData_LoadIdList(mlstNode,mlstNodes, iNode*);
-	}
+    kSaveData_SaveIdList(mlstEntity,tEntityListIt,mlstEntities);
+    kSaveData_SaveIdList(mlstNode,tNodeListIt,mlstNodes);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+void iNode::LoadFromSaveData(iSaveData *apSaveData)
+{
+    kSaveData_LoadFromBegin(iNode);
+}
+
+//-----------------------------------------------------------------------
+
+void iNode::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
+{
+    kSaveData_SetupBegin(iNode);
+
+    kSaveData_LoadIdList(mlstEntity,mlstEntities, iEntity*);
+    kSaveData_LoadIdList(mlstNode,mlstNodes, iNode*);
+}
+
+//-----------------------------------------------------------------------
 
 }

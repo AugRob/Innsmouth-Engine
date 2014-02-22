@@ -21,59 +21,60 @@
 #include <GL/GLee.h>
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cOcclusionQueryOGL::cOcclusionQueryOGL()
-	{
-		glGenQueriesARB(1, (GLuint *)&mlQueryId);
-		mlLastSampleCount =0;
-	}
+cOcclusionQueryOGL::cOcclusionQueryOGL()
+{
+    glGenQueriesARB(1, (GLuint *)&mlQueryId);
+    mlLastSampleCount =0;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cOcclusionQueryOGL::~cOcclusionQueryOGL()
-	{
-		glDeleteQueriesARB(1, (GLuint *)&mlQueryId);
-	}
+cOcclusionQueryOGL::~cOcclusionQueryOGL()
+{
+    glDeleteQueriesARB(1, (GLuint *)&mlQueryId);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cOcclusionQueryOGL::Begin()
-	{
-		glBeginQueryARB(GL_SAMPLES_PASSED_ARB,mlQueryId);
-	}
+void cOcclusionQueryOGL::Begin()
+{
+    glBeginQueryARB(GL_SAMPLES_PASSED_ARB,mlQueryId);
+}
 
-	void cOcclusionQueryOGL::End()
-	{
-		glEndQueryARB(GL_SAMPLES_PASSED_ARB);
-	}
+void cOcclusionQueryOGL::End()
+{
+    glEndQueryARB(GL_SAMPLES_PASSED_ARB);
+}
 
-	bool cOcclusionQueryOGL::FetchResults()
-	{
-		int lAvailable=0;
-		glGetQueryObjectivARB(mlQueryId,GL_QUERY_RESULT_AVAILABLE_ARB,(GLint *)&lAvailable);
-		if(lAvailable==0) return false;
+bool cOcclusionQueryOGL::FetchResults()
+{
+    int lAvailable=0;
+    glGetQueryObjectivARB(mlQueryId,GL_QUERY_RESULT_AVAILABLE_ARB,(GLint *)&lAvailable);
+    if(lAvailable==0) return false;
 
-		glGetQueryObjectivARB(mlQueryId,GL_QUERY_RESULT_ARB,(GLint *)&mlLastSampleCount);
-		return true;
-	}
+    glGetQueryObjectivARB(mlQueryId,GL_QUERY_RESULT_ARB,(GLint *)&mlLastSampleCount);
+    return true;
+}
 
-	unsigned int cOcclusionQueryOGL::GetSampleCount()
-	{
-		return mlLastSampleCount;
-	}
+unsigned int cOcclusionQueryOGL::GetSampleCount()
+{
+    return mlLastSampleCount;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 }

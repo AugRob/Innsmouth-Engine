@@ -29,377 +29,378 @@
 #include "scene/Scene.h"
 #include "scene/World3D.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CREATOR
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CREATOR
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cParticleSystemData3D::cParticleSystemData3D(const tString &asName,
-												cResources* apResources,cGraphics *apGraphics)
-												: iResourceBase(asName,0)
-	{
-		mpResources = apResources;
-		mpGraphics = apGraphics;
-	}
-	
-	//-----------------------------------------------------------------------
+cParticleSystemData3D::cParticleSystemData3D(const tString &asName,
+        cResources* apResources,cGraphics *apGraphics)
+    : iResourceBase(asName,0)
+{
+    mpResources = apResources;
+    mpGraphics = apGraphics;
+}
 
-	cParticleSystemData3D::~cParticleSystemData3D()
-	{
-		STLDeleteAll(mvEmitterData);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+cParticleSystemData3D::~cParticleSystemData3D()
+{
+    STLDeleteAll(mvEmitterData);
+}
 
-	void cParticleSystemData3D::AddEmitterData(iParticleEmitterData *apData)
-	{
-		mvEmitterData.push_back(apData);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cParticleSystemData3D::AddEmitterData(iParticleEmitterData *apData)
+{
+    mvEmitterData.push_back(apData);
+}
 
-	cParticleSystem3D* cParticleSystemData3D::Create(tString asName, cVector3f avSize,
-													const cMatrixf& a_mtxTransform)
-	{
-		if(mvEmitterData.empty())
-		{
-			Warning("Particle system '%s' has no emitters.\n",msName.c_str());
-			return NULL;
-		}
+//-----------------------------------------------------------------------
 
-		cParticleSystem3D *pPS = hplNew( cParticleSystem3D, (asName,this,mpResources,mpGraphics) );
-		pPS->SetMatrix(a_mtxTransform);
+cParticleSystem3D* cParticleSystemData3D::Create(tString asName, cVector3f avSize,
+        const cMatrixf& a_mtxTransform)
+{
+    if(mvEmitterData.empty())
+        {
+            Warning("Particle system '%s' has no emitters.\n",msName.c_str());
+            return NULL;
+        }
 
-		for(size_t i=0; i<mvEmitterData.size(); ++i)
-		{
-			///////////////////////////
-			// Create and add
-			iParticleEmitter3D *pPE = static_cast<iParticleEmitter3D*>(mvEmitterData[i]->Create(asName, avSize));
-			pPS->AddEmitter(pPE);
-			pPE->SetSystem(pPS);
-		}
+    cParticleSystem3D *pPS = hplNew( cParticleSystem3D, (asName,this,mpResources,mpGraphics) );
+    pPS->SetMatrix(a_mtxTransform);
 
-		return pPS;
-	}
+    for(size_t i=0; i<mvEmitterData.size(); ++i)
+        {
+            ///////////////////////////
+            // Create and add
+            iParticleEmitter3D *pPE = static_cast<iParticleEmitter3D*>(mvEmitterData[i]->Create(asName, avSize));
+            pPS->AddEmitter(pPE);
+            pPE->SetSystem(pPS);
+        }
 
-	//-----------------------------------------------------------------------
+    return pPS;
+}
 
-	bool cParticleSystemData3D::LoadFromFile(const tString &asFile)
-	{
-		TiXmlDocument* pXmlDoc = hplNew( TiXmlDocument,(asFile.c_str()) );
-		if(pXmlDoc->LoadFile()==false)
-		{
-			Warning("Couldn't open XML file %s\n",asFile.c_str());
-			hplDelete(pXmlDoc);
-			return false;
-		}
-		
-		TiXmlElement *pRootElem = pXmlDoc->RootElement();
+//-----------------------------------------------------------------------
 
-		TiXmlElement *pEmitterElem = pRootElem->FirstChildElement("ParticleEmitter");
-		for(; pEmitterElem != NULL; pEmitterElem = pEmitterElem->NextSiblingElement("ParticleEmitter"))
-		{
-			cParticleEmitterData3D_UserData *pPE = hplNew( cParticleEmitterData3D_UserData,("",
-																	mpResources,mpGraphics) );
+bool cParticleSystemData3D::LoadFromFile(const tString &asFile)
+{
+    TiXmlDocument* pXmlDoc = hplNew( TiXmlDocument,(asFile.c_str()) );
+    if(pXmlDoc->LoadFile()==false)
+        {
+            Warning("Couldn't open XML file %s\n",asFile.c_str());
+            hplDelete(pXmlDoc);
+            return false;
+        }
+
+    TiXmlElement *pRootElem = pXmlDoc->RootElement();
+
+    TiXmlElement *pEmitterElem = pRootElem->FirstChildElement("ParticleEmitter");
+    for(; pEmitterElem != NULL; pEmitterElem = pEmitterElem->NextSiblingElement("ParticleEmitter"))
+        {
+            cParticleEmitterData3D_UserData *pPE = hplNew( cParticleEmitterData3D_UserData,("",
+                                                   mpResources,mpGraphics) );
 
             pPE->LoadFromElement(pEmitterElem);
-			
-			mvEmitterData.push_back(pPE);
-		}
+
+            mvEmitterData.push_back(pPE);
+        }
 
 
-        hplDelete(pXmlDoc);
-		return true;
-	}
+    hplDelete(pXmlDoc);
+    return true;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cParticleSystem3D::cParticleSystem3D(const tString asName, 
-										cParticleSystemData3D *apData,
-										cResources *apResources, cGraphics *apGraphics)
-		: iEntity3D(asName)
-	{
-		mpResources = apResources;
-		mpGraphics = apGraphics;
-		mpParticleManager = NULL;
-		mpData = apData;
+cParticleSystem3D::cParticleSystem3D(const tString asName,
+                                     cParticleSystemData3D *apData,
+                                     cResources *apResources, cGraphics *apGraphics)
+    : iEntity3D(asName)
+{
+    mpResources = apResources;
+    mpGraphics = apGraphics;
+    mpParticleManager = NULL;
+    mpData = apData;
 
-		mbFirstUpdate = true;
-	}
+    mbFirstUpdate = true;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cParticleSystem3D::~cParticleSystem3D()
-	{
-		for(size_t i=0; i< mvEmitters.size(); ++i)
-		{
-			hplDelete(mvEmitters[i]);
-		}
-		if(mpParticleManager) mpParticleManager->Destroy(mpData);
-	}
+cParticleSystem3D::~cParticleSystem3D()
+{
+    for(size_t i=0; i< mvEmitters.size(); ++i)
+        {
+            hplDelete(mvEmitters[i]);
+        }
+    if(mpParticleManager) mpParticleManager->Destroy(mpData);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	void cParticleSystem3D::SetVisible(bool abVisible)
-	{
-		if(mbIsVisible == abVisible) return;
+//-----------------------------------------------------------------------
 
-		mbIsVisible = abVisible;
-		
-		for(size_t i=0; i< mvEmitters.size(); ++i)
-		{
-			mvEmitters[i]->SetVisible(mbIsVisible);
-		}
-		
-	}
-	
-	//-----------------------------------------------------------------------
+void cParticleSystem3D::SetVisible(bool abVisible)
+{
+    if(mbIsVisible == abVisible) return;
 
-	bool cParticleSystem3D::IsDead()
-	{
-		size_t lCount =0;
+    mbIsVisible = abVisible;
 
-		for(size_t i=0; i< mvEmitters.size(); ++i)
-		{
-			iParticleEmitter3D *pPE = mvEmitters[i];
+    for(size_t i=0; i< mvEmitters.size(); ++i)
+        {
+            mvEmitters[i]->SetVisible(mbIsVisible);
+        }
+
+}
+
+//-----------------------------------------------------------------------
+
+bool cParticleSystem3D::IsDead()
+{
+    size_t lCount =0;
+
+    for(size_t i=0; i< mvEmitters.size(); ++i)
+        {
+            iParticleEmitter3D *pPE = mvEmitters[i];
 
             if(pPE->IsDead()) lCount++;
-		}
+        }
 
-		if(lCount == mvEmitters.size()) return true;
+    if(lCount == mvEmitters.size()) return true;
 
-		return false;
-	}
+    return false;
+}
 
-	bool cParticleSystem3D::IsDying()
-	{
-		size_t lCount =0;
+bool cParticleSystem3D::IsDying()
+{
+    size_t lCount =0;
 
-		for(size_t i=0; i< mvEmitters.size(); ++i)
-		{
-			iParticleEmitter3D *pPE = mvEmitters[i];
+    for(size_t i=0; i< mvEmitters.size(); ++i)
+        {
+            iParticleEmitter3D *pPE = mvEmitters[i];
 
-			if(pPE->IsDying()) lCount++;
-		}
+            if(pPE->IsDying()) lCount++;
+        }
 
-		if(lCount == mvEmitters.size()) return true;
+    if(lCount == mvEmitters.size()) return true;
 
-		return false;
-	}
+    return false;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cParticleSystem3D::Kill()
-	{
-		SetIsSaved(false);
-		for(size_t i=0; i< mvEmitters.size(); ++i)
-		{
-			iParticleEmitter3D *pPE = mvEmitters[i];
+void cParticleSystem3D::Kill()
+{
+    SetIsSaved(false);
+    for(size_t i=0; i< mvEmitters.size(); ++i)
+        {
+            iParticleEmitter3D *pPE = mvEmitters[i];
 
-			pPE->Kill();
-		}
-	}
-	
-	//-----------------------------------------------------------------------
+            pPE->Kill();
+        }
+}
 
-	void cParticleSystem3D::KillInstantly()
-	{
-		SetIsSaved(false);
-		for(size_t i=0; i< mvEmitters.size(); ++i)
-		{
-			iParticleEmitter3D *pPE = mvEmitters[i];
+//-----------------------------------------------------------------------
 
-			pPE->KillInstantly();
-		}
-	}
+void cParticleSystem3D::KillInstantly()
+{
+    SetIsSaved(false);
+    for(size_t i=0; i< mvEmitters.size(); ++i)
+        {
+            iParticleEmitter3D *pPE = mvEmitters[i];
 
-	//-----------------------------------------------------------------------
-	
-	void cParticleSystem3D::UpdateLogic(float afTimeStep)
-	{
-		if(IsActive()==false) return;
+            pPE->KillInstantly();
+        }
+}
 
-		for(size_t i=0; i< mvEmitters.size(); ++i)
-		{
-			iParticleEmitter3D *pPE = mvEmitters[i];
+//-----------------------------------------------------------------------
 
-			//////////////////////////
-			//Warm Up
-			if(mbFirstUpdate)
-			{
-				iParticleEmitterData *pData =  mpData->GetEmitterData((int)i);
-				
-				if(pData->GetWarmUpTime() >0)
-				{
-					float fTime = pData->GetWarmUpTime();
-					float fStepSize = 1.0f /pData->GetWarmUpStepsPerSec();
+void cParticleSystem3D::UpdateLogic(float afTimeStep)
+{
+    if(IsActive()==false) return;
 
-					while(fTime >0)
-					{
-						pPE->UpdateLogic(fStepSize);
-						fTime -= fStepSize;
-					}
-				}
-				mbFirstUpdate = false;
-			}
-			
-			//////////////////////////
-			//Update
-			pPE->UpdateLogic(afTimeStep);
-		}
-	}
+    for(size_t i=0; i< mvEmitters.size(); ++i)
+        {
+            iParticleEmitter3D *pPE = mvEmitters[i];
 
-	//-----------------------------------------------------------------------
+            //////////////////////////
+            //Warm Up
+            if(mbFirstUpdate)
+                {
+                    iParticleEmitterData *pData =  mpData->GetEmitterData((int)i);
 
-	void cParticleSystem3D::AddEmitter(iParticleEmitter3D* apEmitter)
-	{
-		mvEmitters.push_back(apEmitter);
+                    if(pData->GetWarmUpTime() >0)
+                        {
+                            float fTime = pData->GetWarmUpTime();
+                            float fStepSize = 1.0f /pData->GetWarmUpStepsPerSec();
 
-		AddChild(apEmitter);
-	}
-	
-	//-----------------------------------------------------------------------
+                            while(fTime >0)
+                                {
+                                    pPE->UpdateLogic(fStepSize);
+                                    fTime -= fStepSize;
+                                }
+                        }
+                    mbFirstUpdate = false;
+                }
 
-	iParticleEmitter3D* cParticleSystem3D::GetEmitter(int alIdx)
-	{
-		return mvEmitters[alIdx];
-	}
-	
-	//-----------------------------------------------------------------------
+            //////////////////////////
+            //Update
+            pPE->UpdateLogic(afTimeStep);
+        }
+}
 
-	int cParticleSystem3D::GetEmitterNum()
-	{
-		return (int)mvEmitters.size();
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cParticleSystem3D::AddEmitter(iParticleEmitter3D* apEmitter)
+{
+    mvEmitters.push_back(apEmitter);
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
+    AddChild(apEmitter);
+}
 
-	//-----------------------------------------------------------------------
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE OBJECT STUFF
-	//////////////////////////////////////////////////////////////////////////
+iParticleEmitter3D* cParticleSystem3D::GetEmitter(int alIdx)
+{
+    return mvEmitters[alIdx];
+}
 
-	kBeginSerializeBase(cSaveData_ParticleEmitter3D)
-		kSerializeVar(mbActive, eSerializeType_Bool)
-		kSerializeVar(mbDying, eSerializeType_Bool)
-	kEndSerialize()
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+int cParticleSystem3D::GetEmitterNum()
+{
+    return (int)mvEmitters.size();
+}
 
-	kBeginSerialize(cSaveData_cParticleSystem3D,cSaveData_iEntity3D)
-		kSerializeVar(msDataName, eSerializeType_String)
-		kSerializeVar(mvDataSize, eSerializeType_Vector3f)
+//-----------------------------------------------------------------------
 
-		kSerializeClassContainer(mvEmitters,cSaveData_ParticleEmitter3D,eSerializeType_Class)
-	kEndSerialize()
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iSaveObject* cSaveData_cParticleSystem3D::CreateSaveObject(cSaveObjectHandler *apSaveObjectHandler,cGame *apGame)
-	{
-		cWorld3D *pWorld = apGame->GetScene()->GetWorld3D();
+//-----------------------------------------------------------------------
 
-		cParticleSystem3D *pPS = pWorld->CreateParticleSystem(msName,msDataName,mvDataSize,
-															m_mtxLocalTransform);
+//////////////////////////////////////////////////////////////////////////
+// SAVE OBJECT STUFF
+//////////////////////////////////////////////////////////////////////////
 
-		return pPS;
-	}
+kBeginSerializeBase(cSaveData_ParticleEmitter3D)
+kSerializeVar(mbActive, eSerializeType_Bool)
+kSerializeVar(mbDying, eSerializeType_Bool)
+kEndSerialize()
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	int cSaveData_cParticleSystem3D::GetSaveCreatePrio()
-	{
-		return 3;
-	}
+kBeginSerialize(cSaveData_cParticleSystem3D,cSaveData_iEntity3D)
+kSerializeVar(msDataName, eSerializeType_String)
+kSerializeVar(mvDataSize, eSerializeType_Vector3f)
 
-	//-----------------------------------------------------------------------
+kSerializeClassContainer(mvEmitters,cSaveData_ParticleEmitter3D,eSerializeType_Class)
+kEndSerialize()
 
-	iSaveData* cParticleSystem3D::CreateSaveData()
-	{
-		return hplNew( cSaveData_cParticleSystem3D, () );
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+iSaveObject* cSaveData_cParticleSystem3D::CreateSaveObject(cSaveObjectHandler *apSaveObjectHandler,cGame *apGame)
+{
+    cWorld3D *pWorld = apGame->GetScene()->GetWorld3D();
 
-	void cParticleSystem3D::SaveToSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_SaveToBegin(cParticleSystem3D);
+    cParticleSystem3D *pPS = pWorld->CreateParticleSystem(msName,msDataName,mvDataSize,
+                             m_mtxLocalTransform);
 
-		kSaveData_SaveTo(msDataName);
-		kSaveData_SaveTo(mvDataSize);
+    return pPS;
+}
 
-		pData->mvEmitters.Resize(GetEmitterNum());
-		for(int i=0; i< GetEmitterNum(); ++i)
-		{
-			iParticleEmitter3D *pPE = GetEmitter(i);
-			
-			pData->mvEmitters[i].mbDying = pPE->IsDying();
-			pData->mvEmitters[i].mbActive = pPE->IsActive();
-		}
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+int cSaveData_cParticleSystem3D::GetSaveCreatePrio()
+{
+    return 3;
+}
 
-	void cParticleSystem3D::LoadFromSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_LoadFromBegin(cParticleSystem3D);
+//-----------------------------------------------------------------------
 
-		kSaveData_LoadFrom(msDataName);
-		kSaveData_LoadFrom(mvDataSize);
-		
-		if(GetEmitterNum() != pData->mvEmitters.Size())
-		{
-			Error("Saved emitter number in %s/%d does not match loaded, killing system!\n",
-																			GetName().c_str(),
-																			GetSaveObjectId());
+iSaveData* cParticleSystem3D::CreateSaveData()
+{
+    return hplNew( cSaveData_cParticleSystem3D, () );
+}
 
-			for(int i=0; i<GetEmitterNum();++i)
-			{
-				iParticleEmitter3D *pPE = GetEmitter(i);
-				pPE->KillInstantly();
-				return;
-			}
-		}
+//-----------------------------------------------------------------------
 
-		for(int i=0; i< GetEmitterNum(); ++i)
-		{
-			iParticleEmitter3D *pPE = GetEmitter(i);
+void cParticleSystem3D::SaveToSaveData(iSaveData *apSaveData)
+{
+    kSaveData_SaveToBegin(cParticleSystem3D);
 
-			pPE->SetActive(pData->mvEmitters[i].mbActive);
+    kSaveData_SaveTo(msDataName);
+    kSaveData_SaveTo(mvDataSize);
 
-			if(pData->mvEmitters[i].mbDying) pPE->KillInstantly();
-		}
-	}
+    pData->mvEmitters.Resize(GetEmitterNum());
+    for(int i=0; i< GetEmitterNum(); ++i)
+        {
+            iParticleEmitter3D *pPE = GetEmitter(i);
 
-	//-----------------------------------------------------------------------
+            pData->mvEmitters[i].mbDying = pPE->IsDying();
+            pData->mvEmitters[i].mbActive = pPE->IsActive();
+        }
+}
 
-	void cParticleSystem3D::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
-	{
-		kSaveData_SetupBegin(cParticleSystem3D);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cParticleSystem3D::LoadFromSaveData(iSaveData *apSaveData)
+{
+    kSaveData_LoadFromBegin(cParticleSystem3D);
+
+    kSaveData_LoadFrom(msDataName);
+    kSaveData_LoadFrom(mvDataSize);
+
+    if(GetEmitterNum() != pData->mvEmitters.Size())
+        {
+            Error("Saved emitter number in %s/%d does not match loaded, killing system!\n",
+                  GetName().c_str(),
+                  GetSaveObjectId());
+
+            for(int i=0; i<GetEmitterNum(); ++i)
+                {
+                    iParticleEmitter3D *pPE = GetEmitter(i);
+                    pPE->KillInstantly();
+                    return;
+                }
+        }
+
+    for(int i=0; i< GetEmitterNum(); ++i)
+        {
+            iParticleEmitter3D *pPE = GetEmitter(i);
+
+            pPE->SetActive(pData->mvEmitters[i].mbActive);
+
+            if(pData->mvEmitters[i].mbDying) pPE->KillInstantly();
+        }
+}
+
+//-----------------------------------------------------------------------
+
+void cParticleSystem3D::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
+{
+    kSaveData_SetupBegin(cParticleSystem3D);
+}
+
+//-----------------------------------------------------------------------
 }

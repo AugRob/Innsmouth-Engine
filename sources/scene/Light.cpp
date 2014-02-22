@@ -25,208 +25,211 @@
 #include "scene/SoundEntity.h"
 
 
-namespace hpl {
-	
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+namespace hpl
+{
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	iLight::iLight() : mDiffuseColor(0), mSpecularColor(0),mfIntensity(1),
-		mbCastShadows(false), mfFarAttenuation(0), mfNearAttenuation(0),
-		mfSourceRadius(10), mbAffectMaterial(true)
-	{
-		mfFadeTime=0;
+//-----------------------------------------------------------------------
 
-		mbFlickering = false;
+iLight::iLight() : mDiffuseColor(0), mSpecularColor(0),mfIntensity(1),
+    mbCastShadows(false), mfFarAttenuation(0), mfNearAttenuation(0),
+    mfSourceRadius(10), mbAffectMaterial(true)
+{
+    mfFadeTime=0;
 
-		mpWorld3D = NULL;
+    mbFlickering = false;
 
-		mfFlickerStateLength = 0;
+    mpWorld3D = NULL;
 
-		mfFadeTime =0;
-	}
-	
-	//-----------------------------------------------------------------------
+    mfFlickerStateLength = 0;
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
+    mfFadeTime =0;
+}
 
-	void iLight::SetDiffuseColor(cColor aColor)
-	{
-		mDiffuseColor = aColor;
+//-----------------------------------------------------------------------
 
-		OnSetDiffuse();
-	}
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iLight::UpdateLight(float afTimeStep)
-	{	
-		/////////////////////////////////////////////
-		// Fade
-		if(mfFadeTime>0)
-		{
-			//Log("Fading: %f / %f\n",afTimeStep,mfFadeTime);
-			
-			mfFarAttenuation += mfRadiusAdd*afTimeStep;
-			mDiffuseColor.r += mColAdd.r*afTimeStep;
-			mDiffuseColor.g += mColAdd.g*afTimeStep;
-			mDiffuseColor.b += mColAdd.b*afTimeStep;
-			mDiffuseColor.a += mColAdd.a*afTimeStep;
-			SetDiffuseColor(mDiffuseColor);
+void iLight::SetDiffuseColor(cColor aColor)
+{
+    mDiffuseColor = aColor;
 
-			mfFadeTime-=afTimeStep;
-			
-			//Set the dest values.
-			if(mfFadeTime<=0)
-			{
-				mfFadeTime =0;
-				SetDiffuseColor(mDestCol);
-				mfFarAttenuation = mfDestRadius;
-			}
-		}
+    OnSetDiffuse();
+}
 
-		/////////////////////////////////////////////
-		// Flickering
-		if(mbFlickering && mfFadeTime<=0)
-		{	
-			//////////////////////
-			//On
-			if(mbFlickerOn)
-			{
-				if(mfFlickerTime >= mfFlickerStateLength)
-				{
-					mbFlickerOn = false;
-					if(!mbFlickerFade)
-					{
-						SetDiffuseColor(mFlickerOffColor);
-						mfFarAttenuation = mfFlickerOffRadius;
-					}
-					else
-					{
-						FadeTo(mFlickerOffColor,mfFlickerOffRadius,mfFlickerOffFadeLength);
-					}
-					//Sound
-					if(msFlickerOffSound!=""){
-						cSoundEntity *pSound = mpWorld3D->CreateSoundEntity("FlickerOff",
-							msFlickerOffSound,true);
-						if(pSound) pSound->SetPosition(GetLightPosition());
-					}
+//-----------------------------------------------------------------------
 
-					OnFlickerOff();
-                   
-					mfFlickerTime =0;
-					mfFlickerStateLength = cMath::RandRectf(mfFlickerOffMinLength,mfFlickerOffMaxLength);
-				}
-			}
-			//////////////////////
-			//Off
-			else 
-			{
-				if(mfFlickerTime >= mfFlickerStateLength)
-				{
-					mbFlickerOn = true;
-					if(!mbFlickerFade)
-					{
-						SetDiffuseColor(mFlickerOnColor);
-						mfFarAttenuation = mfFlickerOnRadius;
-					}
-					else
-					{
-						FadeTo(mFlickerOnColor,mfFlickerOnRadius,mfFlickerOnFadeLength);
-					}
-					if(msFlickerOnSound!=""){
-						cSoundEntity *pSound = mpWorld3D->CreateSoundEntity("FlickerOn",
-															msFlickerOnSound,true);
-						if(pSound) pSound->SetPosition(GetLightPosition());
-					}
+void iLight::UpdateLight(float afTimeStep)
+{
+    /////////////////////////////////////////////
+    // Fade
+    if(mfFadeTime>0)
+        {
+            //Log("Fading: %f / %f\n",afTimeStep,mfFadeTime);
 
-					OnFlickerOn();
-					
-					mfFlickerTime =0;
-					mfFlickerStateLength = cMath::RandRectf(mfFlickerOnMinLength,mfFlickerOnMaxLength);
-				}
-			}
+            mfFarAttenuation += mfRadiusAdd*afTimeStep;
+            mDiffuseColor.r += mColAdd.r*afTimeStep;
+            mDiffuseColor.g += mColAdd.g*afTimeStep;
+            mDiffuseColor.b += mColAdd.b*afTimeStep;
+            mDiffuseColor.a += mColAdd.a*afTimeStep;
+            SetDiffuseColor(mDiffuseColor);
 
-			mfFlickerTime += afTimeStep;
-		}
+            mfFadeTime-=afTimeStep;
 
-		/*Log("Time: %f Length: %f FadeTime: %f Color: (%f %f %f %f)\n",mfFlickerTime, mfFlickerStateLength,
-											mfFadeTime,
-											mDiffuseColor.r,mDiffuseColor.g,
-											mDiffuseColor.b,mDiffuseColor.a);*/
-	}
+            //Set the dest values.
+            if(mfFadeTime<=0)
+                {
+                    mfFadeTime =0;
+                    SetDiffuseColor(mDestCol);
+                    mfFarAttenuation = mfDestRadius;
+                }
+        }
 
-	//-----------------------------------------------------------------------
+    /////////////////////////////////////////////
+    // Flickering
+    if(mbFlickering && mfFadeTime<=0)
+        {
+            //////////////////////
+            //On
+            if(mbFlickerOn)
+                {
+                    if(mfFlickerTime >= mfFlickerStateLength)
+                        {
+                            mbFlickerOn = false;
+                            if(!mbFlickerFade)
+                                {
+                                    SetDiffuseColor(mFlickerOffColor);
+                                    mfFarAttenuation = mfFlickerOffRadius;
+                                }
+                            else
+                                {
+                                    FadeTo(mFlickerOffColor,mfFlickerOffRadius,mfFlickerOffFadeLength);
+                                }
+                            //Sound
+                            if(msFlickerOffSound!="")
+                                {
+                                    cSoundEntity *pSound = mpWorld3D->CreateSoundEntity("FlickerOff",
+                                                           msFlickerOffSound,true);
+                                    if(pSound) pSound->SetPosition(GetLightPosition());
+                                }
 
-	void iLight::FadeTo(const cColor& aCol, float afRadius, float afTime)
-	{
-		if(afTime<=0) afTime = 0.0001f;
+                            OnFlickerOff();
 
-		mfFadeTime = afTime;
+                            mfFlickerTime =0;
+                            mfFlickerStateLength = cMath::RandRectf(mfFlickerOffMinLength,mfFlickerOffMaxLength);
+                        }
+                }
+            //////////////////////
+            //Off
+            else
+                {
+                    if(mfFlickerTime >= mfFlickerStateLength)
+                        {
+                            mbFlickerOn = true;
+                            if(!mbFlickerFade)
+                                {
+                                    SetDiffuseColor(mFlickerOnColor);
+                                    mfFarAttenuation = mfFlickerOnRadius;
+                                }
+                            else
+                                {
+                                    FadeTo(mFlickerOnColor,mfFlickerOnRadius,mfFlickerOnFadeLength);
+                                }
+                            if(msFlickerOnSound!="")
+                                {
+                                    cSoundEntity *pSound = mpWorld3D->CreateSoundEntity("FlickerOn",
+                                                           msFlickerOnSound,true);
+                                    if(pSound) pSound->SetPosition(GetLightPosition());
+                                }
 
-		mColAdd.r = (aCol.r - mDiffuseColor.r)/afTime;
-		mColAdd.g = (aCol.g - mDiffuseColor.g)/afTime;
-		mColAdd.b = (aCol.b - mDiffuseColor.b)/afTime;
-		mColAdd.a = (aCol.a - mDiffuseColor.a)/afTime;
+                            OnFlickerOn();
 
-		mfRadiusAdd = (afRadius - mfFarAttenuation)/afTime;
+                            mfFlickerTime =0;
+                            mfFlickerStateLength = cMath::RandRectf(mfFlickerOnMinLength,mfFlickerOnMaxLength);
+                        }
+                }
 
-		mfDestRadius = afRadius;
-		mDestCol = aCol;
-	}
+            mfFlickerTime += afTimeStep;
+        }
 
-	bool iLight::IsFading()
-	{
-		return mfFadeTime != 0;
-	}
+    /*Log("Time: %f Length: %f FadeTime: %f Color: (%f %f %f %f)\n",mfFlickerTime, mfFlickerStateLength,
+    									mfFadeTime,
+    									mDiffuseColor.r,mDiffuseColor.g,
+    									mDiffuseColor.b,mDiffuseColor.a);*/
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iLight::SetFlickerActive(bool abX)
-	{
-		mbFlickering = abX;
-	}
-	
-	void iLight::SetFlicker(const cColor& aOffCol, float afOffRadius,
-							float afOnMinLength, float afOnMaxLength,const tString &asOnSound,const tString &asOnPS,
-							float afOffMinLength, float afOffMaxLength,const tString &asOffSound,const tString &asOffPS,
-							bool abFade, float afOnFadeLength, float afOffFadeLength)
-	{
-		mFlickerOffColor = aOffCol;
-		mfFlickerOffRadius = afOffRadius;
+void iLight::FadeTo(const cColor& aCol, float afRadius, float afTime)
+{
+    if(afTime<=0) afTime = 0.0001f;
 
-		mfFlickerOnMinLength = afOnMinLength;
-		mfFlickerOnMaxLength = afOnMaxLength;
-		msFlickerOnSound = asOnSound;
-		msFlickerOnPS = asOnPS;
+    mfFadeTime = afTime;
 
-		mfFlickerOffMinLength = afOffMinLength;
-		mfFlickerOffMaxLength = afOffMaxLength;
-		msFlickerOffSound = asOffSound;
-		msFlickerOffPS = asOffPS;
+    mColAdd.r = (aCol.r - mDiffuseColor.r)/afTime;
+    mColAdd.g = (aCol.g - mDiffuseColor.g)/afTime;
+    mColAdd.b = (aCol.b - mDiffuseColor.b)/afTime;
+    mColAdd.a = (aCol.a - mDiffuseColor.a)/afTime;
 
-		mbFlickerFade = abFade;
+    mfRadiusAdd = (afRadius - mfFarAttenuation)/afTime;
 
-		mfFlickerOnFadeLength = afOnFadeLength;
-		mfFlickerOffFadeLength = afOffFadeLength;
+    mfDestRadius = afRadius;
+    mDestCol = aCol;
+}
 
-		mFlickerOnColor = mDiffuseColor;
-		mfFlickerOnRadius = mfFarAttenuation;
+bool iLight::IsFading()
+{
+    return mfFadeTime != 0;
+}
 
-		mbFlickerOn = true;
-		mfFlickerTime =0;
+//-----------------------------------------------------------------------
 
-		mfFadeTime =0;
+void iLight::SetFlickerActive(bool abX)
+{
+    mbFlickering = abX;
+}
 
-		mfFlickerStateLength = cMath::RandRectf(mfFlickerOnMinLength,mfFlickerOnMaxLength);
-	}
+void iLight::SetFlicker(const cColor& aOffCol, float afOffRadius,
+                        float afOnMinLength, float afOnMaxLength,const tString &asOnSound,const tString &asOnPS,
+                        float afOffMinLength, float afOffMaxLength,const tString &asOffSound,const tString &asOffPS,
+                        bool abFade, float afOnFadeLength, float afOffFadeLength)
+{
+    mFlickerOffColor = aOffCol;
+    mfFlickerOffRadius = afOffRadius;
 
-	//-----------------------------------------------------------------------
-	
+    mfFlickerOnMinLength = afOnMinLength;
+    mfFlickerOnMaxLength = afOnMaxLength;
+    msFlickerOnSound = asOnSound;
+    msFlickerOnPS = asOnPS;
+
+    mfFlickerOffMinLength = afOffMinLength;
+    mfFlickerOffMaxLength = afOffMaxLength;
+    msFlickerOffSound = asOffSound;
+    msFlickerOffPS = asOffPS;
+
+    mbFlickerFade = abFade;
+
+    mfFlickerOnFadeLength = afOnFadeLength;
+    mfFlickerOffFadeLength = afOffFadeLength;
+
+    mFlickerOnColor = mDiffuseColor;
+    mfFlickerOnRadius = mfFarAttenuation;
+
+    mbFlickerOn = true;
+    mfFlickerTime =0;
+
+    mfFadeTime =0;
+
+    mfFlickerStateLength = cMath::RandRectf(mfFlickerOnMinLength,mfFlickerOnMaxLength);
+}
+
+//-----------------------------------------------------------------------
+
 }

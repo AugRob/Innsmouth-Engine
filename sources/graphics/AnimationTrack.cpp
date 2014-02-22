@@ -23,197 +23,198 @@
 #include "system/LowLevelSystem.h"
 #include "scene/Node3D.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cAnimationTrack::cAnimationTrack(const tString &asName, tAnimTransformFlag aTransformFlags, 
-									cAnimation *apParent)
-	{
-		msName = asName;
-		mTransformFlags = aTransformFlags;
-		mpParent = apParent;
+cAnimationTrack::cAnimationTrack(const tString &asName, tAnimTransformFlag aTransformFlags,
+                                 cAnimation *apParent)
+{
+    msName = asName;
+    mTransformFlags = aTransformFlags;
+    mpParent = apParent;
 
-		mfMaxFrameTime = 0;
+    mfMaxFrameTime = 0;
 
-		mlNodeIdx = -1;
-	}
+    mlNodeIdx = -1;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cAnimationTrack::~cAnimationTrack()
-	{
-		STLDeleteAll(mvKeyFrames);
-	}
+cAnimationTrack::~cAnimationTrack()
+{
+    STLDeleteAll(mvKeyFrames);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	void cAnimationTrack::ResizeKeyFrames(int alSize)
-	{
-		mvKeyFrames.reserve(alSize);
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cKeyFrame* cAnimationTrack::CreateKeyFrame(float afTime)
-	{
-		cKeyFrame* pFrame = hplNew( cKeyFrame,());
-		pFrame->time = afTime;
+void cAnimationTrack::ResizeKeyFrames(int alSize)
+{
+    mvKeyFrames.reserve(alSize);
+}
 
-		//Check so that this is the first
-        if(afTime > mfMaxFrameTime || mvKeyFrames.empty())
-		{
-			mvKeyFrames.push_back(pFrame);
-			mfMaxFrameTime = afTime;
-		}
-		else
-		{
-			tKeyFramePtrVecIt it = mvKeyFrames.begin();
-			for(; it != mvKeyFrames.end(); it++)
-			{
-				if(afTime < (*it)->time)
-				{
-					break;
-				}
-			}
-			mvKeyFrames.insert(it,pFrame);
-		}
-		
-        return pFrame;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+cKeyFrame* cAnimationTrack::CreateKeyFrame(float afTime)
+{
+    cKeyFrame* pFrame = hplNew( cKeyFrame,());
+    pFrame->time = afTime;
 
-	void cAnimationTrack::ApplyToNode(cNode3D* apNode, float afTime, float afWeight)
-	{
-		cKeyFrame Frame = GetInterpolatedKeyFrame(afTime);
-        		
-		//Scale
-		//Skip this for now...
-		/*cVector3f vOne(1,1,1);
-		cVector3f vScale = (Frame.scale - vOne)*afWeight + vOne;
-		apNode->AddScale(vScale);*/
-		
-		//Rotation
-		cQuaternion qRot = cMath::QuaternionSlerp(afWeight, cQuaternion::Identity, Frame.rotation, true);
-		apNode->AddRotation(qRot);
-		
-		//Translation
-		cVector3f vTrans = Frame.trans * afWeight;
-		apNode->AddTranslation(vTrans);
-	}
+    //Check so that this is the first
+    if(afTime > mfMaxFrameTime || mvKeyFrames.empty())
+        {
+            mvKeyFrames.push_back(pFrame);
+            mfMaxFrameTime = afTime;
+        }
+    else
+        {
+            tKeyFramePtrVecIt it = mvKeyFrames.begin();
+            for(; it != mvKeyFrames.end(); it++)
+                {
+                    if(afTime < (*it)->time)
+                        {
+                            break;
+                        }
+                }
+            mvKeyFrames.insert(it,pFrame);
+        }
 
-	//-----------------------------------------------------------------------
+    return pFrame;
+}
 
-	cKeyFrame cAnimationTrack::GetInterpolatedKeyFrame(float afTime)
-	{
-		cKeyFrame ResultKeyFrame;
-		ResultKeyFrame.time = afTime;
+//-----------------------------------------------------------------------
 
-		cKeyFrame *pKeyFrameA = NULL;
-		cKeyFrame *pKeyFrameB = NULL;
-		
-		float fT = GetKeyFramesAtTime(afTime, &pKeyFrameA, &pKeyFrameB);
+void cAnimationTrack::ApplyToNode(cNode3D* apNode, float afTime, float afWeight)
+{
+    cKeyFrame Frame = GetInterpolatedKeyFrame(afTime);
 
-		
-        if(fT == 0.0f)
-		{
-			ResultKeyFrame.rotation = pKeyFrameA->rotation;
-			ResultKeyFrame.scale = pKeyFrameA->scale;
-			ResultKeyFrame.trans = pKeyFrameA->trans;
-		}
-		else
-		{	
-			//Do a linear interpolation
-			//This should include spline stuff later on.
+    //Scale
+    //Skip this for now...
+    /*cVector3f vOne(1,1,1);
+    cVector3f vScale = (Frame.scale - vOne)*afWeight + vOne;
+    apNode->AddScale(vScale);*/
 
-            ResultKeyFrame.rotation = cMath::QuaternionSlerp(fT, pKeyFrameA->rotation, 
-													pKeyFrameB->rotation, true);
+    //Rotation
+    cQuaternion qRot = cMath::QuaternionSlerp(afWeight, cQuaternion::Identity, Frame.rotation, true);
+    apNode->AddRotation(qRot);
 
-			ResultKeyFrame.scale = pKeyFrameA->scale * (1 - fT) + pKeyFrameB->scale * fT;
-			ResultKeyFrame.trans = pKeyFrameA->trans * (1 - fT) + pKeyFrameB->trans * fT;
-		}
+    //Translation
+    cVector3f vTrans = Frame.trans * afWeight;
+    apNode->AddTranslation(vTrans);
+}
 
-		return ResultKeyFrame;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-	
-	float cAnimationTrack::GetKeyFramesAtTime(float afTime, cKeyFrame** apKeyFrameA,cKeyFrame** apKeyFrameB)
-	{
-		float fTotalAnimLength = mpParent->GetLength();
+cKeyFrame cAnimationTrack::GetInterpolatedKeyFrame(float afTime)
+{
+    cKeyFrame ResultKeyFrame;
+    ResultKeyFrame.time = afTime;
 
-		// Wrap time 
-		//Not sure it is a good idea to clamp the length.
-		//But wrapping screws loop mode up. 
-		//Wrap(..., totalLength + kEpislon), migh work though.
-		afTime = cMath::Clamp(afTime, 0, fTotalAnimLength);
+    cKeyFrame *pKeyFrameA = NULL;
+    cKeyFrame *pKeyFrameB = NULL;
 
-		//If longer than max time return last frame and first
-		if(afTime >= mfMaxFrameTime)
-		{
-			*apKeyFrameA = mvKeyFrames[mvKeyFrames.size()-1];
-			*apKeyFrameB = mvKeyFrames[0];
-			
-			//Get T between end to start again. (the last frame doesn't mean the anim is over. 
-			// In that case wrap to the first frame).
-			float fDeltaT = fTotalAnimLength - (*apKeyFrameA)->time;
-			
-			//If animation time is >= max time might as well just return the last frame.
-			//Not sure if this is good for some looping anims, in that case check the code.
-			return 0.0f;//(afTime - (*apKeyFrameA)->time) / fDeltaT;
-		}
-
-		//Get the number of frames
-		const int lSize = (int)mvKeyFrames.size();
-
-		//Find the second frame.
-		int lIdxB=-1;
-		for(int i=0; i< lSize; i++)
-		{
-			if(afTime <= mvKeyFrames[i]->time)
-			{
-				lIdxB = i;
-				break;
-			}
-		}
-		
-		//If first frame was found, the lowest time is not 0. 
-		//If so return the first frame only.
-		if(lIdxB == 0)
-		{
-			*apKeyFrameA = mvKeyFrames[0];
-			*apKeyFrameB = mvKeyFrames[0];
-			return 0.0f;
-		}
-		
-		//Get the frames
-		*apKeyFrameA = mvKeyFrames[lIdxB-1];
-		*apKeyFrameB = mvKeyFrames[lIdxB];
-        
-		float fDeltaT = (*apKeyFrameB)->time - (*apKeyFrameA)->time;
-        
-		return (afTime - (*apKeyFrameA)->time) / fDeltaT;
-	}
-
-	//-----------------------------------------------------------------------
+    float fT = GetKeyFramesAtTime(afTime, &pKeyFrameA, &pKeyFrameB);
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
+    if(fT == 0.0f)
+        {
+            ResultKeyFrame.rotation = pKeyFrameA->rotation;
+            ResultKeyFrame.scale = pKeyFrameA->scale;
+            ResultKeyFrame.trans = pKeyFrameA->trans;
+        }
+    else
+        {
+            //Do a linear interpolation
+            //This should include spline stuff later on.
 
-	//-----------------------------------------------------------------------
+            ResultKeyFrame.rotation = cMath::QuaternionSlerp(fT, pKeyFrameA->rotation,
+                                      pKeyFrameB->rotation, true);
 
-	//-----------------------------------------------------------------------
+            ResultKeyFrame.scale = pKeyFrameA->scale * (1 - fT) + pKeyFrameB->scale * fT;
+            ResultKeyFrame.trans = pKeyFrameA->trans * (1 - fT) + pKeyFrameB->trans * fT;
+        }
+
+    return ResultKeyFrame;
+}
+
+//-----------------------------------------------------------------------
+
+float cAnimationTrack::GetKeyFramesAtTime(float afTime, cKeyFrame** apKeyFrameA,cKeyFrame** apKeyFrameB)
+{
+    float fTotalAnimLength = mpParent->GetLength();
+
+    // Wrap time
+    //Not sure it is a good idea to clamp the length.
+    //But wrapping screws loop mode up.
+    //Wrap(..., totalLength + kEpislon), migh work though.
+    afTime = cMath::Clamp(afTime, 0, fTotalAnimLength);
+
+    //If longer than max time return last frame and first
+    if(afTime >= mfMaxFrameTime)
+        {
+            *apKeyFrameA = mvKeyFrames[mvKeyFrames.size()-1];
+            *apKeyFrameB = mvKeyFrames[0];
+
+            //Get T between end to start again. (the last frame doesn't mean the anim is over.
+            // In that case wrap to the first frame).
+            float fDeltaT = fTotalAnimLength - (*apKeyFrameA)->time;
+
+            //If animation time is >= max time might as well just return the last frame.
+            //Not sure if this is good for some looping anims, in that case check the code.
+            return 0.0f;//(afTime - (*apKeyFrameA)->time) / fDeltaT;
+        }
+
+    //Get the number of frames
+    const int lSize = (int)mvKeyFrames.size();
+
+    //Find the second frame.
+    int lIdxB=-1;
+    for(int i=0; i< lSize; i++)
+        {
+            if(afTime <= mvKeyFrames[i]->time)
+                {
+                    lIdxB = i;
+                    break;
+                }
+        }
+
+    //If first frame was found, the lowest time is not 0.
+    //If so return the first frame only.
+    if(lIdxB == 0)
+        {
+            *apKeyFrameA = mvKeyFrames[0];
+            *apKeyFrameB = mvKeyFrames[0];
+            return 0.0f;
+        }
+
+    //Get the frames
+    *apKeyFrameA = mvKeyFrames[lIdxB-1];
+    *apKeyFrameB = mvKeyFrames[lIdxB];
+
+    float fDeltaT = (*apKeyFrameB)->time - (*apKeyFrameA)->time;
+
+    return (afTime - (*apKeyFrameA)->time) / fDeltaT;
+}
+
+//-----------------------------------------------------------------------
+
+
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
 }

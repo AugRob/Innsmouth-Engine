@@ -27,191 +27,192 @@
 #include "math/Math.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// VERTEX PRORGAM SETUP
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// VERTEX PRORGAM SETUP
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	class cFogWaterProgramSetup : public iMaterialProgramSetup
-	{
-	public:
-		void Setup(iGpuProgram *apProgram,cRenderSettings* apRenderSettings)
-		{
-			apProgram->SetFloat("fogStart",apRenderSettings->mfFogStart);
-			apProgram->SetFloat("fogEnd",apRenderSettings->mfFogEnd);
-			//apProgram->SetFloat("timeCount",mfTime);
-			//Log("Setting %f\n",mfTime);
-		}
-		float mfTime;
-	};
+class cFogWaterProgramSetup : public iMaterialProgramSetup
+{
+public:
+    void Setup(iGpuProgram *apProgram,cRenderSettings* apRenderSettings)
+    {
+        apProgram->SetFloat("fogStart",apRenderSettings->mfFogStart);
+        apProgram->SetFloat("fogEnd",apRenderSettings->mfFogEnd);
+        //apProgram->SetFloat("timeCount",mfTime);
+        //Log("Setting %f\n",mfTime);
+    }
+    float mfTime;
+};
 
-	static cFogWaterProgramSetup gFogWaterProgramSetup;
+static cFogWaterProgramSetup gFogWaterProgramSetup;
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	class cWaterProgramSetup : public iMaterialProgramSetup
-	{
-	public:
-		void Setup(iGpuProgram *apProgram,cRenderSettings* apRenderSettings)
-		{
-			apProgram->SetFloat("timeCount",mfTime);
-		}
+class cWaterProgramSetup : public iMaterialProgramSetup
+{
+public:
+    void Setup(iGpuProgram *apProgram,cRenderSettings* apRenderSettings)
+    {
+        apProgram->SetFloat("timeCount",mfTime);
+    }
 
-		float mfTime;
-	};
+    float mfTime;
+};
 
-	static cWaterProgramSetup gWaterProgramSetup;
+static cWaterProgramSetup gWaterProgramSetup;
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMaterial_Water::cMaterial_Water(	const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
-		cImageManager* apImageManager, cTextureManager *apTextureManager,
-		cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
-		eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
-		: iMaterial(asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
-					aPicture,apRenderer3D)
-	{
-		mbIsTransperant = true;
-		mbIsGlowing= false;
-		mbUsesLights = false;
+cMaterial_Water::cMaterial_Water(	const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
+                                    cImageManager* apImageManager, cTextureManager *apTextureManager,
+                                    cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
+                                    eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
+    : iMaterial(asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
+                aPicture,apRenderer3D)
+{
+    mbIsTransperant = true;
+    mbIsGlowing= false;
+    mbUsesLights = false;
 
-		//gModulateFog.SetUp(apLowLevelGraphics);
+    //gModulateFog.SetUp(apLowLevelGraphics);
 
-		mpFogVtxProg = mpProgramManager->CreateProgram("Water_Fog_vp.cg","main",
-														eGpuProgramType_Vertex);
+    mpFogVtxProg = mpProgramManager->CreateProgram("Water_Fog_vp.cg","main",
+                   eGpuProgramType_Vertex);
 
-		mpRefractVtxProg = mpProgramManager->CreateProgram("refract_water_vp.cg","main",	eGpuProgramType_Vertex);
-		mpRefractFragProg = mpProgramManager->CreateProgram("refract_water_fp.cg","main",	eGpuProgramType_Fragment);
+    mpRefractVtxProg = mpProgramManager->CreateProgram("refract_water_vp.cg","main",	eGpuProgramType_Vertex);
+    mpRefractFragProg = mpProgramManager->CreateProgram("refract_water_fp.cg","main",	eGpuProgramType_Fragment);
 
-		iGpuProgram *pVtxProg = mpProgramManager->CreateProgram("Water_Diffuse_vp.cg","main",eGpuProgramType_Vertex);
-		SetProgram(pVtxProg,eGpuProgramType_Vertex,0);
+    iGpuProgram *pVtxProg = mpProgramManager->CreateProgram("Water_Diffuse_vp.cg","main",eGpuProgramType_Vertex);
+    SetProgram(pVtxProg,eGpuProgramType_Vertex,0);
 
-		mfTime = 0;
-	}
+    mfTime = 0;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMaterial_Water::~cMaterial_Water()
-	{
-		if(mpFogVtxProg) mpProgramManager->Destroy(mpFogVtxProg);
-	}
+cMaterial_Water::~cMaterial_Water()
+{
+    if(mpFogVtxProg) mpProgramManager->Destroy(mpFogVtxProg);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	void cMaterial_Water::Update(float afTimeStep)
-	{
-		mfTime += afTimeStep;
-		gWaterProgramSetup.mfTime = mfTime;
-		gFogWaterProgramSetup.mfTime = mfTime;
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iGpuProgram* cMaterial_Water::GetVertexProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-			return mpFogVtxProg;
-		else
-			return mpProgram[eGpuProgramType_Vertex][0];
-	}
+void cMaterial_Water::Update(float afTimeStep)
+{
+    mfTime += afTimeStep;
+    gWaterProgramSetup.mfTime = mfTime;
+    gFogWaterProgramSetup.mfTime = mfTime;
+}
 
-	iMaterialProgramSetup* cMaterial_Water::GetVertexProgramSetup(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-			return &gFogWaterProgramSetup;
-		else
-			return &gWaterProgramSetup;
-	}
+//-----------------------------------------------------------------------
 
-	bool cMaterial_Water::VertexProgramUsesLight(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return false;
-	}
+iGpuProgram* cMaterial_Water::GetVertexProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        return mpFogVtxProg;
+    else
+        return mpProgram[eGpuProgramType_Vertex][0];
+}
 
-	bool cMaterial_Water::VertexProgramUsesEye(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return false;
-	}
+iMaterialProgramSetup* cMaterial_Water::GetVertexProgramSetup(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        return &gFogWaterProgramSetup;
+    else
+        return &gWaterProgramSetup;
+}
 
-	iGpuProgram* cMaterial_Water::GetFragmentProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return NULL;
-	}
+bool cMaterial_Water::VertexProgramUsesLight(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return false;
+}
 
-	eMaterialAlphaMode cMaterial_Water::GetAlphaMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialAlphaMode_Solid;
-	}
+bool cMaterial_Water::VertexProgramUsesEye(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return false;
+}
 
-	eMaterialBlendMode cMaterial_Water::GetBlendMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialBlendMode_Mul;//Add;
-	}
+iGpuProgram* cMaterial_Water::GetFragmentProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return NULL;
+}
 
-	eMaterialChannelMode cMaterial_Water::GetChannelMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialChannelMode_RGBA;
-	}
+eMaterialAlphaMode cMaterial_Water::GetAlphaMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialAlphaMode_Solid;
+}
 
-	//-----------------------------------------------------------------------
+eMaterialBlendMode cMaterial_Water::GetBlendMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialBlendMode_Mul;//Add;
+}
 
-	iTexture* cMaterial_Water::GetTexture(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-		{
-			if(alUnit == 0)
-				return mvTexture[eMaterialTexture_Diffuse];
-			else if(alUnit == 1)
-				return mpRenderer3D->GetFogAddTexture();
-		}
-		else
-		{
-			if(alUnit == 0)
-				return mvTexture[eMaterialTexture_Diffuse];
-		}
-		
-		return NULL;
-	}
+eMaterialChannelMode cMaterial_Water::GetChannelMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialChannelMode_RGBA;
+}
 
-	eMaterialBlendMode cMaterial_Water::GetTextureBlend(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialBlendMode_Mul;
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-	
-	bool cMaterial_Water::UsesType(eMaterialRenderType aType)
-	{
-		if(aType == eMaterialRenderType_Diffuse) return true;
-		return false;
-	}
+iTexture* cMaterial_Water::GetTexture(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        {
+            if(alUnit == 0)
+                return mvTexture[eMaterialTexture_Diffuse];
+            else if(alUnit == 1)
+                return mpRenderer3D->GetFogAddTexture();
+        }
+    else
+        {
+            if(alUnit == 0)
+                return mvTexture[eMaterialTexture_Diffuse];
+        }
 
-	//-----------------------------------------------------------------------
-	
-	tTextureTypeList cMaterial_Water::GetTextureTypes()
-	{ 
-		tTextureTypeList vTypes;
-		vTypes.push_back(cTextureType("",eMaterialTexture_Diffuse));
-		vTypes.push_back(cTextureType("",eMaterialTexture_Specular));
-		
-		if(mpRefractVtxProg && mpRefractFragProg)
-			vTypes.push_back(cTextureType("",eMaterialTexture_Refraction));
-		
-		return vTypes;
-	}
+    return NULL;
+}
 
-	//-----------------------------------------------------------------------
+eMaterialBlendMode cMaterial_Water::GetTextureBlend(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialBlendMode_Mul;
+}
+
+//-----------------------------------------------------------------------
+
+bool cMaterial_Water::UsesType(eMaterialRenderType aType)
+{
+    if(aType == eMaterialRenderType_Diffuse) return true;
+    return false;
+}
+
+//-----------------------------------------------------------------------
+
+tTextureTypeList cMaterial_Water::GetTextureTypes()
+{
+    tTextureTypeList vTypes;
+    vTypes.push_back(cTextureType("",eMaterialTexture_Diffuse));
+    vTypes.push_back(cTextureType("",eMaterialTexture_Specular));
+
+    if(mpRefractVtxProg && mpRefractFragProg)
+        vTypes.push_back(cTextureType("",eMaterialTexture_Refraction));
+
+    return vTypes;
+}
+
+//-----------------------------------------------------------------------
 }

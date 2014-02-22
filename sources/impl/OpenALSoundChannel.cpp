@@ -22,232 +22,233 @@
 
 #include "math/Math.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	cOpenALSoundChannel::cOpenALSoundChannel(iSoundData* apData, int alChannel,cSoundManager* apSoundManger)
-	: iSoundChannel(apData, apSoundManger)
-	{
-		mlChannel = alChannel;
+//-----------------------------------------------------------------------
+
+cOpenALSoundChannel::cOpenALSoundChannel(iSoundData* apData, int alChannel,cSoundManager* apSoundManger)
+    : iSoundChannel(apData, apSoundManger)
+{
+    mlChannel = alChannel;
 
 
-		for(int i=0;i<3;i++)
-		{
-			mfPosition[i] = 0;
-			mfVelocity[i] = 0;
-		}
+    for(int i=0; i<3; i++)
+        {
+            mfPosition[i] = 0;
+            mfVelocity[i] = 0;
+        }
 
-		OAL_Source_SetAttributes ( mlChannel, mfPosition, mfVelocity );
-		OAL_Source_SetFilterType(mlChannel, eOALFilterType_LowPass);
+    OAL_Source_SetAttributes ( mlChannel, mfPosition, mfVelocity );
+    OAL_Source_SetFilterType(mlChannel, eOALFilterType_LowPass);
 //		SetAffectedByEnv(true);
 //		SetFilterGainHF(0.01f);
-		
+
 //		SetFiltering(true,0x3);
 //		OAL_Source_SetMinMaxDistance ( mlChannel, 100000.0f, 200000.f );
-	}
-	
-	//-----------------------------------------------------------------------
+}
 
-	cOpenALSoundChannel::~cOpenALSoundChannel()
-	{
-		if(mlChannel>=0)
-			OAL_Source_Stop ( mlChannel );
+//-----------------------------------------------------------------------
 
-		if(mpSoundManger)mpSoundManger->Destroy(mpData);
-	}
+cOpenALSoundChannel::~cOpenALSoundChannel()
+{
+    if(mlChannel>=0)
+        OAL_Source_Stop ( mlChannel );
 
-	//-----------------------------------------------------------------------
+    if(mpSoundManger)mpSoundManger->Destroy(mpData);
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::Play()
-	{
-		//Log("Playing %s - Source %d Ref %d\n",mpData->GetName().c_str(), mlChannel & 0xFFF, (mlChannel & 0x7ffff000) >> 12);
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-		SetPaused(false);
+//-----------------------------------------------------------------------
 
-		mbStopUsed = false;
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::Stop()
-	{
-		//Log("Stopping %s - Source %d Ref %d\n",mpData->GetName().c_str(), mlChannel & 0xFFF, (mlChannel & 0x7ffff000) >> 12);
-		OAL_Source_Stop ( mlChannel );
-		mlChannel = -1;
+void cOpenALSoundChannel::Play()
+{
+    //Log("Playing %s - Source %d Ref %d\n",mpData->GetName().c_str(), mlChannel & 0xFFF, (mlChannel & 0x7ffff000) >> 12);
 
-		mbStopUsed = true;
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::SetPaused(bool abX)
-	{
+    SetPaused(false);
+
+    mbStopUsed = false;
+}
+
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::Stop()
+{
+    //Log("Stopping %s - Source %d Ref %d\n",mpData->GetName().c_str(), mlChannel & 0xFFF, (mlChannel & 0x7ffff000) >> 12);
+    OAL_Source_Stop ( mlChannel );
+    mlChannel = -1;
+
+    mbStopUsed = true;
+}
+
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::SetPaused(bool abX)
+{
 //		Log("Setting %s %spaused! - Source %d\n",mpData->GetName().c_str(),abX?"":"un", mlChannel);
-		
-		mbPaused = abX;
-		OAL_Source_SetPaused ( mlChannel, abX );
+
+    mbPaused = abX;
+    OAL_Source_SetPaused ( mlChannel, abX );
 
 //		if(mbPaused)
 //		{
-			//Log("Setting %s paused!\n",mpData->GetName().c_str());
+    //Log("Setting %s paused!\n",mpData->GetName().c_str());
 //		}
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::SetSpeed(float afSpeed)
-	{
-		mfSpeed = afSpeed;
-		
-		OAL_Source_SetPitch ( mlChannel, afSpeed );
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::SetVolume(float afVolume)
-	{
-		mfVolume = afVolume;
-		
-		OAL_Source_SetVolume(mlChannel, mfVolume);
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::SetLooping (bool abLoop)
-	{
-		mbLooping = abLoop;
+}
 
-		OAL_Source_SetLoop ( mlChannel, abLoop );
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cOpenALSoundChannel::SetSpeed(float afSpeed)
+{
+    mfSpeed = afSpeed;
 
-	void cOpenALSoundChannel::SetPan (float afPan)
-	{
-		//Log("Pan: %d\n", lPan);
+    OAL_Source_SetPitch ( mlChannel, afSpeed );
+}
+
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::SetVolume(float afVolume)
+{
+    mfVolume = afVolume;
+
+    OAL_Source_SetVolume(mlChannel, mfVolume);
+}
+
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::SetLooping (bool abLoop)
+{
+    mbLooping = abLoop;
+
+    OAL_Source_SetLoop ( mlChannel, abLoop );
+}
+
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::SetPan (float afPan)
+{
+    //Log("Pan: %d\n", lPan);
 //		cVector3f vPosition = mvPosition;
-//		vPosition.x = 
+//		vPosition.x =
 //		OAL_Source_SetAttributes ( mlChannel, mvPosition.
 //		FSOUND_SetPan(mlChannel, lPan);
-	}
-	
-	//-----------------------------------------------------------------------
+}
 
-	void cOpenALSoundChannel::Set3D(bool ab3D)
-	{
-		mb3D = ab3D;		
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::SetPositionRelative(bool abRelative)
-	{
-		mbPositionRelative = abRelative;
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::Set3D(bool ab3D)
+{
+    mb3D = ab3D;
+}
+
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::SetPositionRelative(bool abRelative)
+{
+    mbPositionRelative = abRelative;
 //		OAL_Source_SetPositionRelative ( mlChannel, abRelative );
-	}
+}
 
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::SetPosition(const cVector3f &avPos)
-	{
-		mvPosition = avPos;
+//-----------------------------------------------------------------------
 
-		OAL_Source_SetAttributes ( mlChannel, mvPosition.v, mvVelocity.v );
-	}
-	
-	//-----------------------------------------------------------------------
+void cOpenALSoundChannel::SetPosition(const cVector3f &avPos)
+{
+    mvPosition = avPos;
 
-	void cOpenALSoundChannel::SetVelocity(const cVector3f &avVel)
-	{
-		mvVelocity = avVel;
-		
-		OAL_Source_SetAttributes ( mlChannel, mvPosition.v, mvVelocity.v );
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::SetMinDistance(float afMin)
-	{
-		mfMinDistance = afMin;
-	}
+    OAL_Source_SetAttributes ( mlChannel, mvPosition.v, mvVelocity.v );
+}
 
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::SetMaxDistance(float afMax)
-	{
-		mfMaxDistance = afMax;
-	}
-	//-----------------------------------------------------------------------
-	
-	bool cOpenALSoundChannel::IsPlaying()
-	{
-		return OAL_Source_IsPlaying( mlChannel );
-	}
-	//-----------------------------------------------------------------------
-	
-	void cOpenALSoundChannel::SetPriority(int alX)
-	{
-		int lPrio = alX+mlPriorityModifier;
-		if(lPrio>255)lPrio = 255;
+//-----------------------------------------------------------------------
 
-		OAL_Source_SetPriority ( mlChannel, lPrio );
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	int cOpenALSoundChannel::GetPriority()
-	{
-		return OAL_Source_GetPriority ( mlChannel );
-	}
-	
-	//-----------------------------------------------------------------------
+void cOpenALSoundChannel::SetVelocity(const cVector3f &avVel)
+{
+    mvVelocity = avVel;
 
-	void cOpenALSoundChannel::SetAffectedByEnv(bool abAffected)
-	{
+    OAL_Source_SetAttributes ( mlChannel, mvPosition.v, mvVelocity.v );
+}
+
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::SetMinDistance(float afMin)
+{
+    mfMinDistance = afMin;
+}
+
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::SetMaxDistance(float afMax)
+{
+    mfMaxDistance = afMax;
+}
+//-----------------------------------------------------------------------
+
+bool cOpenALSoundChannel::IsPlaying()
+{
+    return OAL_Source_IsPlaying( mlChannel );
+}
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::SetPriority(int alX)
+{
+    int lPrio = alX+mlPriorityModifier;
+    if(lPrio>255)lPrio = 255;
+
+    OAL_Source_SetPriority ( mlChannel, lPrio );
+}
+
+//-----------------------------------------------------------------------
+
+int cOpenALSoundChannel::GetPriority()
+{
+    return OAL_Source_GetPriority ( mlChannel );
+}
+
+//-----------------------------------------------------------------------
+
+void cOpenALSoundChannel::SetAffectedByEnv(bool abAffected)
+{
 //		if (!(gpGame->GetSound()->GetLowLevel()->IsEnvAudioAvailable()))
 //			return;
-        
-		iSoundChannel::SetAffectedByEnv(abAffected);
 
-		if (mbAffectedByEnv)
-			OAL_Source_SetAuxSendSlot(mlChannel,0,0);
-		else
-			OAL_Source_SetAuxSendSlot(mlChannel,0,-1);
-	}
+    iSoundChannel::SetAffectedByEnv(abAffected);
 
-	void cOpenALSoundChannel::SetFiltering(bool abEnabled, int alFlags)
-	{
+    if (mbAffectedByEnv)
+        OAL_Source_SetAuxSendSlot(mlChannel,0,0);
+    else
+        OAL_Source_SetAuxSendSlot(mlChannel,0,-1);
+}
+
+void cOpenALSoundChannel::SetFiltering(bool abEnabled, int alFlags)
+{
 //		if (!(gpGame->GetSound()->GetLowLevel()->IsEnvAudioAvailable()))
 //			return;
-        
-		OAL_Source_SetFiltering(mlChannel,abEnabled, alFlags);
-	}
 
-	void cOpenALSoundChannel::SetFilterGain(float afGain)
-	{
+    OAL_Source_SetFiltering(mlChannel,abEnabled, alFlags);
+}
+
+void cOpenALSoundChannel::SetFilterGain(float afGain)
+{
 //		if (!(gpGame->GetSound()->GetLowLevel()->IsEnvAudioAvailable()))
 //			return;
-        
-		OAL_Source_SetFilterGain(mlChannel, afGain);
-	}
-	
-	void cOpenALSoundChannel::SetFilterGainHF( float afGainHF)
-	{
+
+    OAL_Source_SetFilterGain(mlChannel, afGain);
+}
+
+void cOpenALSoundChannel::SetFilterGainHF( float afGainHF)
+{
 //		if (!(gpGame->GetSound()->GetLowLevel()->IsEnvAudioAvailable()))
 //			return;
-        
-		OAL_Source_SetFilterGainHF(mlChannel, afGainHF);
-	}
+
+    OAL_Source_SetFilterGainHF(mlChannel, afGainHF);
+}
 
 }

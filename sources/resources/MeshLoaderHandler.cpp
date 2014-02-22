@@ -24,142 +24,143 @@
 #include "resources/Resources.h"
 #include "scene/Scene.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	bool iMeshLoader::mbRestricStaticLightToSector = false;
-	bool iMeshLoader::mbUseFastMaterial = false;
-	tString iMeshLoader::msFastMaterialFile = "";
-	tString iMeshLoader::msCacheDir = "core/cache/";
+bool iMeshLoader::mbRestricStaticLightToSector = false;
+bool iMeshLoader::mbUseFastMaterial = false;
+tString iMeshLoader::msFastMaterialFile = "";
+tString iMeshLoader::msCacheDir = "core/cache/";
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	cMeshLoaderHandler::cMeshLoaderHandler(cResources* apResources, cScene *apScene)
-	{
-		mpResources = apResources;
-		mpScene = apScene;
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMeshLoaderHandler::~cMeshLoaderHandler()
-	{
-		tMeshLoaderListIt it = mlstLoaders.begin();
-		for(;it != mlstLoaders.end();it++)
-		{
-			hplDelete(*it);
-		}
+cMeshLoaderHandler::cMeshLoaderHandler(cResources* apResources, cScene *apScene)
+{
+    mpResources = apResources;
+    mpScene = apScene;
+}
 
-		mlstLoaders.clear();
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+cMeshLoaderHandler::~cMeshLoaderHandler()
+{
+    tMeshLoaderListIt it = mlstLoaders.begin();
+    for(; it != mlstLoaders.end(); it++)
+        {
+            hplDelete(*it);
+        }
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+    mlstLoaders.clear();
+}
 
-	//-----------------------------------------------------------------------
-	
-	cMesh* cMeshLoaderHandler::LoadMesh(const tString& asFile,tMeshLoadFlag aFlags)
-	{
-		tString sType = cString::ToLowerCase(cString::GetFileExt(asFile));
-		
-		tMeshLoaderListIt it = mlstLoaders.begin();
-		for(;it != mlstLoaders.end();it++)
-		{
-			iMeshLoader *pLoader = *it;
+//-----------------------------------------------------------------------
 
-			if(pLoader->IsSupported(sType))
-			{
-				return pLoader->LoadMesh(asFile,aFlags);
-			}
-		}
-		
-		Log("No loader for '%s' found!\n", sType.c_str());
-		return NULL;
-	}
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cMeshLoaderHandler::SaveMesh(cMesh* apMesh,const tString& asFile)
-	{
-		tString sType = cString::ToLowerCase(cString::GetFileExt(asFile));
-		
-		tMeshLoaderListIt it = mlstLoaders.begin();
-		for(;it != mlstLoaders.end();it++)
-		{
-			iMeshLoader *pLoader = *it;
+cMesh* cMeshLoaderHandler::LoadMesh(const tString& asFile,tMeshLoadFlag aFlags)
+{
+    tString sType = cString::ToLowerCase(cString::GetFileExt(asFile));
 
-			if(pLoader->IsSupported(sType))
-			{
-				return pLoader->SaveMesh(apMesh,asFile);
-			}
-		}
-	
-		Log("No loader for '%s' found!\n", sType.c_str());
-		return false;
-	}
-	
-	//-----------------------------------------------------------------------
+    tMeshLoaderListIt it = mlstLoaders.begin();
+    for(; it != mlstLoaders.end(); it++)
+        {
+            iMeshLoader *pLoader = *it;
 
-	cWorld3D* cMeshLoaderHandler::LoadWorld(const tString& asFile, tWorldLoadFlag aFlags)
-	{
-		tString sType = cString::ToLowerCase(cString::GetFileExt(asFile));
+            if(pLoader->IsSupported(sType))
+                {
+                    return pLoader->LoadMesh(asFile,aFlags);
+                }
+        }
 
-		tMeshLoaderListIt it = mlstLoaders.begin();
-		for(;it != mlstLoaders.end();it++)
-		{
-			iMeshLoader *pLoader = *it;
+    Log("No loader for '%s' found!\n", sType.c_str());
+    return NULL;
+}
 
-			if(pLoader->IsSupported(sType))
-			{
-				return pLoader->LoadWorld(asFile,mpScene, aFlags);
-			}
-		}
+//-----------------------------------------------------------------------
 
-		Log("No loader for '%s' found!\n", sType.c_str());
-		return NULL;
-	}
+bool cMeshLoaderHandler::SaveMesh(cMesh* apMesh,const tString& asFile)
+{
+    tString sType = cString::ToLowerCase(cString::GetFileExt(asFile));
 
-	//-----------------------------------------------------------------------
+    tMeshLoaderListIt it = mlstLoaders.begin();
+    for(; it != mlstLoaders.end(); it++)
+        {
+            iMeshLoader *pLoader = *it;
 
-	cAnimation* cMeshLoaderHandler::LoadAnimation(const tString& asFile)
-	{
-		tString sType = cString::ToLowerCase(cString::GetFileExt(asFile));
+            if(pLoader->IsSupported(sType))
+                {
+                    return pLoader->SaveMesh(apMesh,asFile);
+                }
+        }
 
-		tMeshLoaderListIt it = mlstLoaders.begin();
-		for(;it != mlstLoaders.end();it++)
-		{
-			iMeshLoader *pLoader = *it;
+    Log("No loader for '%s' found!\n", sType.c_str());
+    return false;
+}
 
-			if(pLoader->IsSupported(sType))
-			{
-				return pLoader->LoadAnimation(asFile);
-			}
-		}
+//-----------------------------------------------------------------------
 
-		Log("No loader for '%s' found!\n", sType.c_str());
-		return NULL;
-	}
+cWorld3D* cMeshLoaderHandler::LoadWorld(const tString& asFile, tWorldLoadFlag aFlags)
+{
+    tString sType = cString::ToLowerCase(cString::GetFileExt(asFile));
+
+    tMeshLoaderListIt it = mlstLoaders.begin();
+    for(; it != mlstLoaders.end(); it++)
+        {
+            iMeshLoader *pLoader = *it;
+
+            if(pLoader->IsSupported(sType))
+                {
+                    return pLoader->LoadWorld(asFile,mpScene, aFlags);
+                }
+        }
+
+    Log("No loader for '%s' found!\n", sType.c_str());
+    return NULL;
+}
+
+//-----------------------------------------------------------------------
+
+cAnimation* cMeshLoaderHandler::LoadAnimation(const tString& asFile)
+{
+    tString sType = cString::ToLowerCase(cString::GetFileExt(asFile));
+
+    tMeshLoaderListIt it = mlstLoaders.begin();
+    for(; it != mlstLoaders.end(); it++)
+        {
+            iMeshLoader *pLoader = *it;
+
+            if(pLoader->IsSupported(sType))
+                {
+                    return pLoader->LoadAnimation(asFile);
+                }
+        }
+
+    Log("No loader for '%s' found!\n", sType.c_str());
+    return NULL;
+}
 
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cMeshLoaderHandler::AddLoader(iMeshLoader *apLoader)
-	{
-		mlstLoaders.push_back(apLoader);
-		
-		apLoader->mpMaterialManager = mpResources->GetMaterialManager();
-		apLoader->mpMeshManager = mpResources->GetMeshManager();
-		apLoader->mpAnimationManager = mpResources->GetAnimationManager();
-		apLoader->mpSystem = mpScene->GetSystem();
-		
-		apLoader->AddSupportedTypes(&mvSupportedTypes);
-	}
+void cMeshLoaderHandler::AddLoader(iMeshLoader *apLoader)
+{
+    mlstLoaders.push_back(apLoader);
 
-	//-----------------------------------------------------------------------
+    apLoader->mpMaterialManager = mpResources->GetMaterialManager();
+    apLoader->mpMeshManager = mpResources->GetMeshManager();
+    apLoader->mpAnimationManager = mpResources->GetAnimationManager();
+    apLoader->mpSystem = mpScene->GetSystem();
+
+    apLoader->AddSupportedTypes(&mvSupportedTypes);
+}
+
+//-----------------------------------------------------------------------
 }

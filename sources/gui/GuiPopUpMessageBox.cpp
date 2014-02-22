@@ -32,124 +32,126 @@
 #include "gui/WidgetLabel.h"
 #include "gui/WidgetWindow.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cGuiPopUpMessageBox::cGuiPopUpMessageBox(cGuiSet *apSet,
-											const tWString& asLabel, const tWString& asText,
-											const tWString& asButton1, const tWString& asButton2,
-											void *apCallbackObject, tGuiCallbackFunc apCallback) 
-						: iGuiPopUp(apSet)
-	{
-		//////////////////////////
-		// Set up variables
-		mpCallback = apCallback;
-		mpCallbackObject = apCallbackObject;
+cGuiPopUpMessageBox::cGuiPopUpMessageBox(cGuiSet *apSet,
+        const tWString& asLabel, const tWString& asText,
+        const tWString& asButton1, const tWString& asButton2,
+        void *apCallbackObject, tGuiCallbackFunc apCallback)
+    : iGuiPopUp(apSet)
+{
+    //////////////////////////
+    // Set up variables
+    mpCallback = apCallback;
+    mpCallbackObject = apCallbackObject;
 
-		cGuiSkinFont *pFont = mpSkin->GetFont(eGuiSkinFont_Default);
-		
-		float fWindowMinLength = pFont->mpFont->GetLength(pFont->mvSize,asLabel.c_str());
-		float fTextLength = pFont->mpFont->GetLength(pFont->mvSize,asText.c_str());
+    cGuiSkinFont *pFont = mpSkin->GetFont(eGuiSkinFont_Default);
 
-		if(fTextLength > fWindowMinLength) fWindowMinLength = fTextLength;
+    float fWindowMinLength = pFont->mpFont->GetLength(pFont->mvSize,asLabel.c_str());
+    float fTextLength = pFont->mpFont->GetLength(pFont->mvSize,asText.c_str());
 
-		float fWindowWidth = fWindowMinLength+40 > 200 ? fWindowMinLength+40 : 200;
+    if(fTextLength > fWindowMinLength) fWindowMinLength = fTextLength;
 
-		cVector2f vVirtSize = mpSet->GetVirtualSize();
+    float fWindowWidth = fWindowMinLength+40 > 200 ? fWindowMinLength+40 : 200;
 
-		float fWindowHeight = 90 + pFont->mvSize.y;
-		
-		//////////////////////////
-		// Window
-		cVector3f vPos = cVector3f(vVirtSize.x/2 - fWindowWidth/2,vVirtSize.y/2- fWindowHeight/2,18);
-		mpWindow = mpSet->CreateWidgetWindow(vPos,cVector2f(fWindowWidth,fWindowHeight),asLabel,NULL);
+    cVector2f vVirtSize = mpSet->GetVirtualSize();
 
-		//////////////////////////
-		// Buttons
-		if(asButton2 == _W(""))
-		{
-			vPos = cVector3f(fWindowWidth/2 - 40, 50 + pFont->mvSize.y,1);
-			mvButtons[0] = mpSet->CreateWidgetButton(vPos,cVector2f(80,30),asButton1,mpWindow);
-			mvButtons[0]->AddCallback(eGuiMessage_ButtonPressed,this, kGuiCallback(ButtonPress));
+    float fWindowHeight = 90 + pFont->mvSize.y;
 
-			mvButtons[1] = NULL;
-		}
-		else
-		{
-			vPos = cVector3f(fWindowWidth/2 - (80*2+20)/2, 50 + pFont->mvSize.y,1);
-			mvButtons[0] = mpSet->CreateWidgetButton(vPos,cVector2f(80,30),asButton1,mpWindow);
-			mvButtons[0]->AddCallback(eGuiMessage_ButtonPressed,this, kGuiCallback(ButtonPress));
+    //////////////////////////
+    // Window
+    cVector3f vPos = cVector3f(vVirtSize.x/2 - fWindowWidth/2,vVirtSize.y/2- fWindowHeight/2,18);
+    mpWindow = mpSet->CreateWidgetWindow(vPos,cVector2f(fWindowWidth,fWindowHeight),asLabel,NULL);
 
-			vPos.x += 80+20;
-			mvButtons[1] = mpSet->CreateWidgetButton(vPos,cVector2f(80,30),asButton2,mpWindow);
-			mvButtons[1]->AddCallback(eGuiMessage_ButtonPressed,this, kGuiCallback(ButtonPress));
+    //////////////////////////
+    // Buttons
+    if(asButton2 == _W(""))
+        {
+            vPos = cVector3f(fWindowWidth/2 - 40, 50 + pFont->mvSize.y,1);
+            mvButtons[0] = mpSet->CreateWidgetButton(vPos,cVector2f(80,30),asButton1,mpWindow);
+            mvButtons[0]->AddCallback(eGuiMessage_ButtonPressed,this, kGuiCallback(ButtonPress));
 
-		}
+            mvButtons[1] = NULL;
+        }
+    else
+        {
+            vPos = cVector3f(fWindowWidth/2 - (80*2+20)/2, 50 + pFont->mvSize.y,1);
+            mvButtons[0] = mpSet->CreateWidgetButton(vPos,cVector2f(80,30),asButton1,mpWindow);
+            mvButtons[0]->AddCallback(eGuiMessage_ButtonPressed,this, kGuiCallback(ButtonPress));
 
-		//////////////////////////
-		// Label
-		vPos = cVector3f(20, 30,1);
-		mpLabel = mpSet->CreateWidgetLabel(vPos,cVector2f(fWindowWidth-10,pFont->mvSize.y),
-											asText,mpWindow);
+            vPos.x += 80+20;
+            mvButtons[1] = mpSet->CreateWidgetButton(vPos,cVector2f(80,30),asButton2,mpWindow);
+            mvButtons[1]->AddCallback(eGuiMessage_ButtonPressed,this, kGuiCallback(ButtonPress));
 
-		//////////////////////////
-		// Attention
-		mpPrevAttention = mpSet->GetAttentionWidget();
-		mpSet->SetAttentionWidget(mpWindow);
-	}
+        }
 
-	//-----------------------------------------------------------------------
+    //////////////////////////
+    // Label
+    vPos = cVector3f(20, 30,1);
+    mpLabel = mpSet->CreateWidgetLabel(vPos,cVector2f(fWindowWidth-10,pFont->mvSize.y),
+                                       asText,mpWindow);
 
-	cGuiPopUpMessageBox::~cGuiPopUpMessageBox()
-	{
-		if(mpWindow) mpSet->DestroyWidget(mpWindow);
-		if(mvButtons[0]) mpSet->DestroyWidget(mvButtons[0]);
-		if(mvButtons[1]) mpSet->DestroyWidget(mvButtons[1]);
-		if(mpLabel) mpSet->DestroyWidget(mpLabel);
-	}
+    //////////////////////////
+    // Attention
+    mpPrevAttention = mpSet->GetAttentionWidget();
+    mpSet->SetAttentionWidget(mpWindow);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+cGuiPopUpMessageBox::~cGuiPopUpMessageBox()
+{
+    if(mpWindow) mpSet->DestroyWidget(mpWindow);
+    if(mvButtons[0]) mpSet->DestroyWidget(mvButtons[0]);
+    if(mvButtons[1]) mpSet->DestroyWidget(mvButtons[1]);
+    if(mpLabel) mpSet->DestroyWidget(mpLabel);
+}
 
-	//-----------------------------------------------------------------------
-	
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// PROTECTED METHODS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
-	
-	bool cGuiPopUpMessageBox::ButtonPress(iWidget* apWidget,cGuiMessageData& aData)
-	{
-		int lButton = apWidget == mvButtons[0] ? 0 : 1;
 
-		mpSet->SetAttentionWidget(mpPrevAttention);
+//////////////////////////////////////////////////////////////////////////
+// PROTECTED METHODS
+//////////////////////////////////////////////////////////////////////////
 
-		if(mpCallback && mpCallbackObject) {
-			cGuiMessageData data = cGuiMessageData(lButton);
-			mpCallback(mpCallbackObject, apWidget, data);
-		}
+//-----------------------------------------------------------------------
 
-		SelfDestruct();
-		
-		return true;
-	}
-	kGuiCalllbackDeclaredFuncEnd(cGuiPopUpMessageBox,ButtonPress)
+bool cGuiPopUpMessageBox::ButtonPress(iWidget* apWidget,cGuiMessageData& aData)
+{
+    int lButton = apWidget == mvButtons[0] ? 0 : 1;
 
-	
-	//-----------------------------------------------------------------------
+    mpSet->SetAttentionWidget(mpPrevAttention);
+
+    if(mpCallback && mpCallbackObject)
+        {
+            cGuiMessageData data = cGuiMessageData(lButton);
+            mpCallback(mpCallbackObject, apWidget, data);
+        }
+
+    SelfDestruct();
+
+    return true;
+}
+kGuiCalllbackDeclaredFuncEnd(cGuiPopUpMessageBox,ButtonPress)
+
+
+//-----------------------------------------------------------------------
 
 
 }

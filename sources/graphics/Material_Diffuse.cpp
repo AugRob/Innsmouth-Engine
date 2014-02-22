@@ -22,80 +22,81 @@
 #include "graphics/Material_Fallback02_BaseLight.h"
 #include "graphics/Material_Flat.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMaterial_Diffuse::cMaterial_Diffuse(const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
-		cImageManager* apImageManager, cTextureManager *apTextureManager,
-		cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
-		eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
-		: iMaterial_BaseLight(	"Diffuse_Light_vp.cg",
-								"Diffuse_Light_fp.cg",
-			asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
-			aPicture,apRenderer3D)
-	{
-		mbUseSpecular = false;
-		mbUseNormalMap = false;
-	}
+cMaterial_Diffuse::cMaterial_Diffuse(const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
+                                     cImageManager* apImageManager, cTextureManager *apTextureManager,
+                                     cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
+                                     eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
+    : iMaterial_BaseLight(	"Diffuse_Light_vp.cg",
+                            "Diffuse_Light_fp.cg",
+                            asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
+                            aPicture,apRenderer3D)
+{
+    mbUseSpecular = false;
+    mbUseNormalMap = false;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMaterial_Diffuse::~cMaterial_Diffuse()
-	{
+cMaterial_Diffuse::~cMaterial_Diffuse()
+{
 
-	}
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	cMaterialType_Diffuse::cMaterialType_Diffuse()
-	{
-		mlTechLevel =0;
-	}
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+cMaterialType_Diffuse::cMaterialType_Diffuse()
+{
+    mlTechLevel =0;
+}
 
-	iMaterial* cMaterialType_Diffuse::Create(const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
-										cImageManager* apImageManager, cTextureManager *apTextureManager,
-										cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
-										eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
-	{
-		if(	apLowLevelGraphics->GetCaps(eGraphicCaps_GL_FragmentProgram) &&
-			iMaterial::GetQuality() >= eMaterialQuality_High)
-		{
-			return hplNew( cMaterial_Diffuse, (asName,apLowLevelGraphics,
-									apImageManager,apTextureManager,apRenderer,
-									apProgramManager,aPicture,apRenderer3D) );
-		}
-		else if(apLowLevelGraphics->GetCaps(eGraphicCaps_MaxTextureImageUnits)>=3 &&
-			iMaterial::GetQuality() >= eMaterialQuality_Medium)
-		{
-			return hplNew( cMaterial_Fallback01_Diffuse, (asName,apLowLevelGraphics,
-										apImageManager,apTextureManager,apRenderer,
-										apProgramManager,aPicture,apRenderer3D) );
-		}
-		else if(apLowLevelGraphics->GetCaps(eGraphicCaps_GL_VertexProgram) &&
-			iMaterial::GetQuality() >= eMaterialQuality_Low)
-		{
-			return hplNew( cMaterial_Fallback02_Diffuse, (asName,apLowLevelGraphics,
-				apImageManager,apTextureManager,apRenderer,
-				apProgramManager,aPicture,apRenderer3D) );	
-		}
-		else
-		{
-			return hplNew( cMaterial_Flat, (asName,apLowLevelGraphics,
-				apImageManager,apTextureManager,apRenderer,
-				apProgramManager,aPicture,apRenderer3D) );
-		}
-	}
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+iMaterial* cMaterialType_Diffuse::Create(const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
+        cImageManager* apImageManager, cTextureManager *apTextureManager,
+        cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
+        eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
+{
+    if(	apLowLevelGraphics->GetCaps(eGraphicCaps_GL_FragmentProgram) &&
+            iMaterial::GetQuality() >= eMaterialQuality_High)
+        {
+            return hplNew( cMaterial_Diffuse, (asName,apLowLevelGraphics,
+                                               apImageManager,apTextureManager,apRenderer,
+                                               apProgramManager,aPicture,apRenderer3D) );
+        }
+    else if(apLowLevelGraphics->GetCaps(eGraphicCaps_MaxTextureImageUnits)>=3 &&
+            iMaterial::GetQuality() >= eMaterialQuality_Medium)
+        {
+            return hplNew( cMaterial_Fallback01_Diffuse, (asName,apLowLevelGraphics,
+                           apImageManager,apTextureManager,apRenderer,
+                           apProgramManager,aPicture,apRenderer3D) );
+        }
+    else if(apLowLevelGraphics->GetCaps(eGraphicCaps_GL_VertexProgram) &&
+            iMaterial::GetQuality() >= eMaterialQuality_Low)
+        {
+            return hplNew( cMaterial_Fallback02_Diffuse, (asName,apLowLevelGraphics,
+                           apImageManager,apTextureManager,apRenderer,
+                           apProgramManager,aPicture,apRenderer3D) );
+        }
+    else
+        {
+            return hplNew( cMaterial_Flat, (asName,apLowLevelGraphics,
+                                            apImageManager,apTextureManager,apRenderer,
+                                            apProgramManager,aPicture,apRenderer3D) );
+        }
+}
+
+//-----------------------------------------------------------------------
 }

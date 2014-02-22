@@ -27,209 +27,210 @@
 #include "math/Math.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// FRAGMENT PRORGAM SETUP
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// FRAGMENT PRORGAM SETUP
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	class cGLState_ModulateFog : public iGLStateProgram
-	{
-	public:
+//-----------------------------------------------------------------------
 
-		cGLState_ModulateFog() : iGLStateProgram("ModulateFog"){}
-		
-		void Bind()
-		{
-			mpLowGfx->SetActiveTextureUnit(1);
-			mpLowGfx->SetTextureEnv(eTextureParam_ColorSource2,eTextureSource_Texture);
-			mpLowGfx->SetTextureEnv(eTextureParam_ColorSource0,eTextureSource_Constant);
-			mpLowGfx->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Interpolate);
-			mpLowGfx->SetTextureEnv(eTextureParam_ColorOp2,eTextureOp_OneMinusColor);
-			mpLowGfx->SetTextureConstantColor(cColor(1,1,1,1));
-		}
+class cGLState_ModulateFog : public iGLStateProgram
+{
+public:
 
-		void UnBind()
-		{
-			mpLowGfx->SetActiveTextureUnit(1);
-			mpLowGfx->SetTextureEnv(eTextureParam_ColorSource0,eTextureSource_Texture);
-			mpLowGfx->SetTextureEnv(eTextureParam_ColorSource1,eTextureSource_Previous);
-			mpLowGfx->SetTextureEnv(eTextureParam_ColorSource2,eTextureSource_Constant);
-			mpLowGfx->SetTextureEnv(eTextureParam_ColorOp2,eTextureOp_Color);
-			mpLowGfx->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Modulate);
-		}
+    cGLState_ModulateFog() : iGLStateProgram("ModulateFog") {}
 
-	private:
-		void InitData(){}
-	};
+    void Bind()
+    {
+        mpLowGfx->SetActiveTextureUnit(1);
+        mpLowGfx->SetTextureEnv(eTextureParam_ColorSource2,eTextureSource_Texture);
+        mpLowGfx->SetTextureEnv(eTextureParam_ColorSource0,eTextureSource_Constant);
+        mpLowGfx->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Interpolate);
+        mpLowGfx->SetTextureEnv(eTextureParam_ColorOp2,eTextureOp_OneMinusColor);
+        mpLowGfx->SetTextureConstantColor(cColor(1,1,1,1));
+    }
 
-	static cGLState_ModulateFog gModulateFog;
-	
-	//-----------------------------------------------------------------------
+    void UnBind()
+    {
+        mpLowGfx->SetActiveTextureUnit(1);
+        mpLowGfx->SetTextureEnv(eTextureParam_ColorSource0,eTextureSource_Texture);
+        mpLowGfx->SetTextureEnv(eTextureParam_ColorSource1,eTextureSource_Previous);
+        mpLowGfx->SetTextureEnv(eTextureParam_ColorSource2,eTextureSource_Constant);
+        mpLowGfx->SetTextureEnv(eTextureParam_ColorOp2,eTextureOp_Color);
+        mpLowGfx->SetTextureEnv(eTextureParam_ColorFunc, eTextureFunc_Modulate);
+    }
 
-	//////////////////////////////////////////////////////////////////////////
-	// VERTEX PRORGAM SETUP
-	//////////////////////////////////////////////////////////////////////////
+private:
+    void InitData() {}
+};
 
-	//-----------------------------------------------------------------------
+static cGLState_ModulateFog gModulateFog;
 
-	class cFogProgramSetup : public iMaterialProgramSetup
-	{
-	public:
-		void Setup(iGpuProgram *apProgram,cRenderSettings* apRenderSettings)
-		{
-			apProgram->SetFloat("fogStart",apRenderSettings->mfFogStart);
-			apProgram->SetFloat("fogEnd",apRenderSettings->mfFogEnd);
-		}
-	};
+//-----------------------------------------------------------------------
 
-	static cFogProgramSetup gFogProgramSetup;
+//////////////////////////////////////////////////////////////////////////
+// VERTEX PRORGAM SETUP
+//////////////////////////////////////////////////////////////////////////
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+class cFogProgramSetup : public iMaterialProgramSetup
+{
+public:
+    void Setup(iGpuProgram *apProgram,cRenderSettings* apRenderSettings)
+    {
+        apProgram->SetFloat("fogStart",apRenderSettings->mfFogStart);
+        apProgram->SetFloat("fogEnd",apRenderSettings->mfFogEnd);
+    }
+};
 
-	cMaterial_Modulative::cMaterial_Modulative(	const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
-		cImageManager* apImageManager, cTextureManager *apTextureManager,
-		cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
-		eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
-		: iMaterial(asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
-					aPicture,apRenderer3D)
-	{
-		mbIsTransperant = true;
-		mbIsGlowing= false;
-		mbUsesLights = false;
+static cFogProgramSetup gFogProgramSetup;
 
-		gModulateFog.SetUp(apLowLevelGraphics);
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-		mpFogVtxProg = mpProgramManager->CreateProgram("Fog_Trans_vp.cg","main",eGpuProgramType_Vertex);
+//-----------------------------------------------------------------------
 
-		if(mpLowLevelGraphics->GetCaps(eGraphicCaps_GL_FragmentProgram))
-			mpFogFragProg = mpProgramManager->CreateProgram("Fog_Trans_Mod_fp.cg","main",eGpuProgramType_Fragment);
-		else
-			mpFogFragProg = NULL;
-	}
+cMaterial_Modulative::cMaterial_Modulative(	const tString& asName,iLowLevelGraphics* apLowLevelGraphics,
+        cImageManager* apImageManager, cTextureManager *apTextureManager,
+        cRenderer2D* apRenderer, cGpuProgramManager* apProgramManager,
+        eMaterialPicture aPicture, cRenderer3D *apRenderer3D)
+    : iMaterial(asName,apLowLevelGraphics,apImageManager,apTextureManager,apRenderer,apProgramManager,
+                aPicture,apRenderer3D)
+{
+    mbIsTransperant = true;
+    mbIsGlowing= false;
+    mbUsesLights = false;
 
-	//-----------------------------------------------------------------------
+    gModulateFog.SetUp(apLowLevelGraphics);
 
-	cMaterial_Modulative::~cMaterial_Modulative()
-	{
-		if(mpFogVtxProg) mpProgramManager->Destroy(mpFogVtxProg);
-		if(mpFogFragProg) mpProgramManager->Destroy(mpFogFragProg);
-	}
+    mpFogVtxProg = mpProgramManager->CreateProgram("Fog_Trans_vp.cg","main",eGpuProgramType_Vertex);
 
-	//-----------------------------------------------------------------------
+    if(mpLowLevelGraphics->GetCaps(eGraphicCaps_GL_FragmentProgram))
+        mpFogFragProg = mpProgramManager->CreateProgram("Fog_Trans_Mod_fp.cg","main",eGpuProgramType_Fragment);
+    else
+        mpFogFragProg = NULL;
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iGpuProgram* cMaterial_Modulative::GetVertexProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-			return mpFogVtxProg;
-		else
-			return NULL;
-	}
+cMaterial_Modulative::~cMaterial_Modulative()
+{
+    if(mpFogVtxProg) mpProgramManager->Destroy(mpFogVtxProg);
+    if(mpFogFragProg) mpProgramManager->Destroy(mpFogFragProg);
+}
 
-	iMaterialProgramSetup* cMaterial_Modulative::GetVertexProgramSetup(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-			return &gFogProgramSetup;
-		else
-			return NULL;
-	}
+//-----------------------------------------------------------------------
 
-	bool cMaterial_Modulative::VertexProgramUsesLight(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return false;
-	}
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	bool cMaterial_Modulative::VertexProgramUsesEye(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return false;
-	}
+//-----------------------------------------------------------------------
 
-	iGpuProgram* cMaterial_Modulative::GetFragmentProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-		{
-			if(mpFogFragProg)
-				return mpFogFragProg;
-			else
-				return &gModulateFog;
-		}
-		else
-		{
-			return NULL;
-		}
-	}
+iGpuProgram* cMaterial_Modulative::GetVertexProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        return mpFogVtxProg;
+    else
+        return NULL;
+}
 
-	eMaterialAlphaMode cMaterial_Modulative::GetAlphaMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialAlphaMode_Solid;
-	}
+iMaterialProgramSetup* cMaterial_Modulative::GetVertexProgramSetup(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        return &gFogProgramSetup;
+    else
+        return NULL;
+}
 
-	eMaterialBlendMode cMaterial_Modulative::GetBlendMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialBlendMode_Mul;
-	}
+bool cMaterial_Modulative::VertexProgramUsesLight(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return false;
+}
 
-	eMaterialChannelMode cMaterial_Modulative::GetChannelMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialChannelMode_RGBA;
-	}
+bool cMaterial_Modulative::VertexProgramUsesEye(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return false;
+}
 
-	//-----------------------------------------------------------------------
+iGpuProgram* cMaterial_Modulative::GetFragmentProgram(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        {
+            if(mpFogFragProg)
+                return mpFogFragProg;
+            else
+                return &gModulateFog;
+        }
+    else
+        {
+            return NULL;
+        }
+}
 
-	iTexture* cMaterial_Modulative::GetTexture(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		if(mpRenderSettings->mbFogActive)
-		{
-			if(alUnit == 0)
-				return mvTexture[eMaterialTexture_Diffuse];
-			else if(alUnit == 1)
-				return mpRenderer3D->GetFogAddTexture();
-		}
-		else
-		{
-			if(alUnit == 0)
-				return mvTexture[eMaterialTexture_Diffuse];
-		}
-		
-		return NULL;
-	}
+eMaterialAlphaMode cMaterial_Modulative::GetAlphaMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialAlphaMode_Solid;
+}
 
-	eMaterialBlendMode cMaterial_Modulative::GetTextureBlend(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
-	{
-		return eMaterialBlendMode_Mul;
-	}
+eMaterialBlendMode cMaterial_Modulative::GetBlendMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialBlendMode_Mul;
+}
 
-	//-----------------------------------------------------------------------
-	
-	bool cMaterial_Modulative::UsesType(eMaterialRenderType aType)
-	{
-		if(aType == eMaterialRenderType_Diffuse) return true;
-		return false;
-	}
+eMaterialChannelMode cMaterial_Modulative::GetChannelMode(eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialChannelMode_RGBA;
+}
 
-	//-----------------------------------------------------------------------
-	
-	tTextureTypeList cMaterial_Modulative::GetTextureTypes()
-	{ 
-		tTextureTypeList vTypes;
-		vTypes.push_back(cTextureType("",eMaterialTexture_Diffuse));
-		vTypes.push_back(cTextureType("_ref",eMaterialTexture_Refraction));
-		vTypes.push_back(cTextureType("_spec",eMaterialTexture_Specular));
+//-----------------------------------------------------------------------
 
-		return vTypes;
-	}
+iTexture* cMaterial_Modulative::GetTexture(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    if(mpRenderSettings->mbFogActive)
+        {
+            if(alUnit == 0)
+                return mvTexture[eMaterialTexture_Diffuse];
+            else if(alUnit == 1)
+                return mpRenderer3D->GetFogAddTexture();
+        }
+    else
+        {
+            if(alUnit == 0)
+                return mvTexture[eMaterialTexture_Diffuse];
+        }
 
-	//-----------------------------------------------------------------------
+    return NULL;
+}
+
+eMaterialBlendMode cMaterial_Modulative::GetTextureBlend(int alUnit,eMaterialRenderType aType, int alPass, iLight3D *apLight)
+{
+    return eMaterialBlendMode_Mul;
+}
+
+//-----------------------------------------------------------------------
+
+bool cMaterial_Modulative::UsesType(eMaterialRenderType aType)
+{
+    if(aType == eMaterialRenderType_Diffuse) return true;
+    return false;
+}
+
+//-----------------------------------------------------------------------
+
+tTextureTypeList cMaterial_Modulative::GetTextureTypes()
+{
+    tTextureTypeList vTypes;
+    vTypes.push_back(cTextureType("",eMaterialTexture_Diffuse));
+    vTypes.push_back(cTextureType("_ref",eMaterialTexture_Refraction));
+    vTypes.push_back(cTextureType("_spec",eMaterialTexture_Specular));
+
+    return vTypes;
+}
+
+//-----------------------------------------------------------------------
 }

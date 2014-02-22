@@ -25,90 +25,91 @@
 #include "physics/PhysicsBody.h"
 #include "physics/PhysicsWorld.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE OBJECT STUFF
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// SAVE OBJECT STUFF
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	kBeginSerialize(cSaveData_iPhysicsJointSlider, cSaveData_iPhysicsJoint)
-		kSerializeVar(mfMaxDistance, eSerializeType_Float32)
-		kSerializeVar(mfMinDistance, eSerializeType_Float32)
-		kSerializeVar(mvPin, eSerializeType_Vector3f)
-		kEndSerialize()
+kBeginSerialize(cSaveData_iPhysicsJointSlider, cSaveData_iPhysicsJoint)
+kSerializeVar(mfMaxDistance, eSerializeType_Float32)
+kSerializeVar(mfMinDistance, eSerializeType_Float32)
+kSerializeVar(mvPin, eSerializeType_Vector3f)
+kEndSerialize()
 
-		//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-		iSaveObject* cSaveData_iPhysicsJointSlider::CreateSaveObject(cSaveObjectHandler *apSaveObjectHandler,cGame *apGame)
-	{
-		iPhysicsWorld *apWorld = apGame->GetScene()->GetWorld3D()->GetPhysicsWorld();
+iSaveObject* cSaveData_iPhysicsJointSlider::CreateSaveObject(cSaveObjectHandler *apSaveObjectHandler,cGame *apGame)
+{
+    iPhysicsWorld *apWorld = apGame->GetScene()->GetWorld3D()->GetPhysicsWorld();
 
-		cMatrixf mtxChildTemp, mtxParentTemp;
+    cMatrixf mtxChildTemp, mtxParentTemp;
 
-		iPhysicsBody *pChildBody = static_cast<iPhysicsBody*>(apSaveObjectHandler->Get(mlChildBodyId));
-		if(pChildBody==NULL) return NULL;
+    iPhysicsBody *pChildBody = static_cast<iPhysicsBody*>(apSaveObjectHandler->Get(mlChildBodyId));
+    if(pChildBody==NULL) return NULL;
 
-		iPhysicsBody *pParentBody = NULL;
-		if(mlParentBodyId>0) pParentBody = static_cast<iPhysicsBody*>(apSaveObjectHandler->Get(mlParentBodyId));
+    iPhysicsBody *pParentBody = NULL;
+    if(mlParentBodyId>0) pParentBody = static_cast<iPhysicsBody*>(apSaveObjectHandler->Get(mlParentBodyId));
 
-		mtxChildTemp = pChildBody->GetLocalMatrix();
-		if(pParentBody) mtxParentTemp = pParentBody->GetLocalMatrix();
+    mtxChildTemp = pChildBody->GetLocalMatrix();
+    if(pParentBody) mtxParentTemp = pParentBody->GetLocalMatrix();
 
-		pChildBody->SetMatrix(m_mtxChildBodySetup);
-		if(pParentBody) pParentBody->SetMatrix(m_mtxParentBodySetup);
+    pChildBody->SetMatrix(m_mtxChildBodySetup);
+    if(pParentBody) pParentBody->SetMatrix(m_mtxParentBodySetup);
 
-		iPhysicsJointSlider *pJoint = apWorld->CreateJointSlider(msName,mvStartPivotPoint,mvPinDir,pParentBody,pChildBody);
+    iPhysicsJointSlider *pJoint = apWorld->CreateJointSlider(msName,mvStartPivotPoint,mvPinDir,pParentBody,pChildBody);
 
-		pChildBody->SetMatrix(mtxChildTemp);
-		if(pParentBody) pParentBody->SetMatrix(mtxParentTemp);
+    pChildBody->SetMatrix(mtxChildTemp);
+    if(pParentBody) pParentBody->SetMatrix(mtxParentTemp);
 
-		return pJoint;
-	}
+    return pJoint;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	int cSaveData_iPhysicsJointSlider::GetSaveCreatePrio()
-	{
-		return 1;
-	}
+int cSaveData_iPhysicsJointSlider::GetSaveCreatePrio()
+{
+    return 1;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iSaveData* iPhysicsJointSlider::CreateSaveData()
-	{
-		return hplNew( cSaveData_iPhysicsJointSlider, () );
-	}
+iSaveData* iPhysicsJointSlider::CreateSaveData()
+{
+    return hplNew( cSaveData_iPhysicsJointSlider, () );
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iPhysicsJointSlider::SaveToSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_SaveToBegin(iPhysicsJointSlider);
+void iPhysicsJointSlider::SaveToSaveData(iSaveData *apSaveData)
+{
+    kSaveData_SaveToBegin(iPhysicsJointSlider);
 
-		kSaveData_SaveTo(mfMaxDistance);
-		kSaveData_SaveTo(mfMinDistance);
-		kSaveData_SaveTo(mvPin);
-	}
+    kSaveData_SaveTo(mfMaxDistance);
+    kSaveData_SaveTo(mfMinDistance);
+    kSaveData_SaveTo(mvPin);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iPhysicsJointSlider::LoadFromSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_LoadFromBegin(iPhysicsJointSlider);
+void iPhysicsJointSlider::LoadFromSaveData(iSaveData *apSaveData)
+{
+    kSaveData_LoadFromBegin(iPhysicsJointSlider);
 
-		kSaveData_LoadFrom(mfMaxDistance);
-		kSaveData_LoadFrom(mfMinDistance);
-		kSaveData_LoadFrom(mvPin);
-	}
+    kSaveData_LoadFrom(mfMaxDistance);
+    kSaveData_LoadFrom(mfMinDistance);
+    kSaveData_LoadFrom(mvPin);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iPhysicsJointSlider::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
-	{
-		kSaveData_SetupBegin(iPhysicsJointSlider);
-	}
+void iPhysicsJointSlider::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
+{
+    kSaveData_SetupBegin(iPhysicsJointSlider);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 }

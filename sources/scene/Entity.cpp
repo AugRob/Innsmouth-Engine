@@ -21,76 +21,77 @@
 #include "scene/Node.h"
 #include "system/LowLevelSystem.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iEntity::~iEntity()
-	{
-		if(mpParentNode)
-		{
-			mpParentNode->RemoveEntity(this);
-		}
-	}
+iEntity::~iEntity()
+{
+    if(mpParentNode)
+        {
+            mpParentNode->RemoveEntity(this);
+        }
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE OBJECT STUFF
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// SAVE OBJECT STUFF
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
-	
-	kBeginSerializeVirtual(cSaveData_iEntity, iSaveData)
-	kSerializeVar(mlParentNodeId, eSerializeType_Int32)
-	kSerializeVar(msName, eSerializeType_String)
-	kSerializeVar(mbIsVisible, eSerializeType_Bool)
-	kSerializeVar(mbIsActive, eSerializeType_Bool)
-	kEndSerialize()
-	
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iSaveData* iEntity::CreateSaveData()
-	{
-		return NULL;
-	}
+kBeginSerializeVirtual(cSaveData_iEntity, iSaveData)
+kSerializeVar(mlParentNodeId, eSerializeType_Int32)
+kSerializeVar(msName, eSerializeType_String)
+kSerializeVar(mbIsVisible, eSerializeType_Bool)
+kSerializeVar(mbIsActive, eSerializeType_Bool)
+kEndSerialize()
 
-	//-----------------------------------------------------------------------
-	
-	void iEntity::SaveToSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_SaveToBegin(iEntity);
-		
-		kSaveData_SaveTo(mbIsActive);
-		kSaveData_SaveTo(mbIsVisible);
-		kSaveData_SaveTo(msName);
-		
-		kSaveData_SaveObject(mpParentNode,mlParentNodeId);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+iSaveData* iEntity::CreateSaveData()
+{
+    return NULL;
+}
 
-	void iEntity::LoadFromSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_LoadFromBegin(iEntity);
-		
-		kSaveData_LoadFrom(mbIsActive);
-		kSaveData_LoadFrom(mbIsVisible);
-		kSaveData_LoadFrom(msName);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void iEntity::SaveToSaveData(iSaveData *apSaveData)
+{
+    kSaveData_SaveToBegin(iEntity);
 
-	void iEntity::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
-	{
-		kSaveData_SetupBegin(iEntity);
+    kSaveData_SaveTo(mbIsActive);
+    kSaveData_SaveTo(mbIsVisible);
+    kSaveData_SaveTo(msName);
 
-		//kSaveData_LoadObject(mpParentNode,mlParentNodeId,iNode*);
-	}
+    kSaveData_SaveObject(mpParentNode,mlParentNodeId);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+void iEntity::LoadFromSaveData(iSaveData *apSaveData)
+{
+    kSaveData_LoadFromBegin(iEntity);
+
+    kSaveData_LoadFrom(mbIsActive);
+    kSaveData_LoadFrom(mbIsVisible);
+    kSaveData_LoadFrom(msName);
+}
+
+//-----------------------------------------------------------------------
+
+void iEntity::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
+{
+    kSaveData_SetupBegin(iEntity);
+
+    //kSaveData_LoadObject(mpParentNode,mlParentNodeId,iNode*);
+}
+
+//-----------------------------------------------------------------------
 }

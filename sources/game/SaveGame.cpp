@@ -20,204 +20,206 @@
 
 #include "system/LowLevelSystem.h"
 
-namespace hpl {
-	
-	
-	
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE GAME DATA
-	//////////////////////////////////////////////////////////////////////////
-	
-	//------------------------------------------------------------------------
-	
-	//Serialize iSaveGame
-	kBeginSerializeBaseVirtual(iSaveData)
-	kSerializeVar(mlSaveDataId, eSerializeType_Int32)
-	kEndSerialize()
+namespace hpl
+{
 
-	//------------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE GAME OBJECT
-	//////////////////////////////////////////////////////////////////////////
-	
-	int iSaveObject::_mlGlobalIdCount =0;
 
-	//------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// SAVE GAME DATA
+//////////////////////////////////////////////////////////////////////////
 
-	iSaveObject::iSaveObject()
-	{
-		mlSaveObjectId = _mlGlobalIdCount++;
-		if(_mlGlobalIdCount <0) _mlGlobalIdCount=0;
+//------------------------------------------------------------------------
 
-		mbIsSaved = true;
-	}
-	
-	iSaveObject::~iSaveObject()
-	{
+//Serialize iSaveGame
+kBeginSerializeBaseVirtual(iSaveData)
+kSerializeVar(mlSaveDataId, eSerializeType_Int32)
+kEndSerialize()
 
-	}
+//------------------------------------------------------------------------
 
-	//------------------------------------------------------------------------
-	
-	void iSaveObject::SaveToSaveData(iSaveData *apSaveData)
-	{
-		apSaveData->mlSaveDataId = mlSaveObjectId;	
-	}
+//////////////////////////////////////////////////////////////////////////
+// SAVE GAME OBJECT
+//////////////////////////////////////////////////////////////////////////
 
-	//------------------------------------------------------------------------
-	
-	void iSaveObject::LoadFromSaveData(iSaveData *apSaveData)
-	{
-		mlSaveObjectId = apSaveData->mlSaveDataId;
-		mpSaveData = apSaveData;
-	}
+int iSaveObject::_mlGlobalIdCount =0;
 
-	//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 
-	void iSaveObject::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
-	{
+iSaveObject::iSaveObject()
+{
+    mlSaveObjectId = _mlGlobalIdCount++;
+    if(_mlGlobalIdCount <0) _mlGlobalIdCount=0;
 
-	}
-	
-	//------------------------------------------------------------------------
+    mbIsSaved = true;
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE GAME CONTAINER
-	//////////////////////////////////////////////////////////////////////////
+iSaveObject::~iSaveObject()
+{
 
-	//------------------------------------------------------------------------
+}
 
-	cSaveObjectHandler::cSaveObjectHandler()
-	{
+//------------------------------------------------------------------------
 
-	}
-	
-	cSaveObjectHandler::~cSaveObjectHandler()
-	{
+void iSaveObject::SaveToSaveData(iSaveData *apSaveData)
+{
+    apSaveData->mlSaveDataId = mlSaveObjectId;
+}
 
-	}
+//------------------------------------------------------------------------
 
-	//------------------------------------------------------------------------
+void iSaveObject::LoadFromSaveData(iSaveData *apSaveData)
+{
+    mlSaveObjectId = apSaveData->mlSaveDataId;
+    mpSaveData = apSaveData;
+}
 
-	void cSaveObjectHandler::Add(iSaveObject *pObject)
-	{
-		m_mapSaveObjects.insert(tSaveObjectMap::value_type(pObject->GetSaveObjectId(),pObject));
-	}
-	
-	//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 
-	iSaveObject* cSaveObjectHandler::Get(int alId)
-	{
-		tSaveObjectMapIt it = m_mapSaveObjects.find(alId);
-		if(it== m_mapSaveObjects.end()){
-			Warning("Couldn't find save object with id %d\n",alId);
-			return NULL;
-		}
+void iSaveObject::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
+{
 
-		return it->second;
-	}
+}
 
-	//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 
-	cSaveObjectIterator cSaveObjectHandler::GetIterator()
-	{
-		return cSaveObjectIterator(&m_mapSaveObjects);
-	}
-	
-	//------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// SAVE GAME CONTAINER
+//////////////////////////////////////////////////////////////////////////
 
-	void cSaveObjectHandler::SetUpAll(cGame *apGame)
-	{
-		int lMaxId =0;
+//------------------------------------------------------------------------
 
-		tSaveObjectMapIt it = m_mapSaveObjects.begin();
-        for(; it != m_mapSaveObjects.end(); ++it)
-		{
-			iSaveObject *pObject = it->second;
+cSaveObjectHandler::cSaveObjectHandler()
+{
 
-			if(pObject->GetSaveObjectId() > lMaxId) lMaxId = pObject->GetSaveObjectId();
+}
 
-			pObject->SaveDataSetup(this,apGame);
-		}
+cSaveObjectHandler::~cSaveObjectHandler()
+{
 
-		iSaveObject::_mlGlobalIdCount = lMaxId;
-	}
-	
-	//------------------------------------------------------------------------
+}
 
-	void cSaveObjectHandler::Clear()
-	{
-		m_mapSaveObjects.clear();
-	}
+//------------------------------------------------------------------------
 
-	//------------------------------------------------------------------------
+void cSaveObjectHandler::Add(iSaveObject *pObject)
+{
+    m_mapSaveObjects.insert(tSaveObjectMap::value_type(pObject->GetSaveObjectId(),pObject));
+}
 
-	size_t cSaveObjectHandler::Size()
-	{
-		return m_mapSaveObjects.size();
-	}
+//------------------------------------------------------------------------
 
-	//------------------------------------------------------------------------
-	
+iSaveObject* cSaveObjectHandler::Get(int alId)
+{
+    tSaveObjectMapIt it = m_mapSaveObjects.find(alId);
+    if(it== m_mapSaveObjects.end())
+        {
+            Warning("Couldn't find save object with id %d\n",alId);
+            return NULL;
+        }
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE DATA CONTAINER
-	//////////////////////////////////////////////////////////////////////////
+    return it->second;
+}
 
-	//------------------------------------------------------------------------
-	
-	cSaveDataHandler::cSaveDataHandler()
-	{
+//------------------------------------------------------------------------
 
-	}
+cSaveObjectIterator cSaveObjectHandler::GetIterator()
+{
+    return cSaveObjectIterator(&m_mapSaveObjects);
+}
 
-	cSaveDataHandler::~cSaveDataHandler()
-	{
+//------------------------------------------------------------------------
 
-	}
-	
-	//------------------------------------------------------------------------
+void cSaveObjectHandler::SetUpAll(cGame *apGame)
+{
+    int lMaxId =0;
 
-	void cSaveDataHandler::Add(iSaveData *pData)
-	{
-		m_mapSaveData.insert(tSaveDataMap::value_type(pData->GetSaveCreatePrio(), pData));
-	}
+    tSaveObjectMapIt it = m_mapSaveObjects.begin();
+    for(; it != m_mapSaveObjects.end(); ++it)
+        {
+            iSaveObject *pObject = it->second;
 
-	cSaveDataIterator cSaveDataHandler::GetIterator()
-	{
-		return cSaveDataIterator(&m_mapSaveData);
-	}
+            if(pObject->GetSaveObjectId() > lMaxId) lMaxId = pObject->GetSaveObjectId();
 
-	void cSaveDataHandler::Clear()
-	{
-		m_mapSaveData.clear();
-	}
+            pObject->SaveDataSetup(this,apGame);
+        }
 
-	size_t cSaveDataHandler::Size()
-	{
-		return m_mapSaveData.size();
-	}
-	
-	//------------------------------------------------------------------------
+    iSaveObject::_mlGlobalIdCount = lMaxId;
+}
 
-	void cSaveDataHandler::AddVoidPtr(void **apPtr)
-	{
-		iSaveData** pDataPtr = (iSaveData**)apPtr;
-		Add(*pDataPtr);
-	}
-	void cSaveDataHandler::AddVoidClass(void *apClass)
-	{
-		iSaveData* pData = (iSaveData*)(apClass);
-		Add(pData);
-	}
+//------------------------------------------------------------------------
 
-	iContainerIterator* cSaveDataHandler::CreateIteratorPtr()
-	{
-		return hplNew( cSaveDataIterator, (&m_mapSaveData) );
-	}
+void cSaveObjectHandler::Clear()
+{
+    m_mapSaveObjects.clear();
+}
 
-	//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 
-	
+size_t cSaveObjectHandler::Size()
+{
+    return m_mapSaveObjects.size();
+}
+
+//------------------------------------------------------------------------
+
+
+//////////////////////////////////////////////////////////////////////////
+// SAVE DATA CONTAINER
+//////////////////////////////////////////////////////////////////////////
+
+//------------------------------------------------------------------------
+
+cSaveDataHandler::cSaveDataHandler()
+{
+
+}
+
+cSaveDataHandler::~cSaveDataHandler()
+{
+
+}
+
+//------------------------------------------------------------------------
+
+void cSaveDataHandler::Add(iSaveData *pData)
+{
+    m_mapSaveData.insert(tSaveDataMap::value_type(pData->GetSaveCreatePrio(), pData));
+}
+
+cSaveDataIterator cSaveDataHandler::GetIterator()
+{
+    return cSaveDataIterator(&m_mapSaveData);
+}
+
+void cSaveDataHandler::Clear()
+{
+    m_mapSaveData.clear();
+}
+
+size_t cSaveDataHandler::Size()
+{
+    return m_mapSaveData.size();
+}
+
+//------------------------------------------------------------------------
+
+void cSaveDataHandler::AddVoidPtr(void **apPtr)
+{
+    iSaveData** pDataPtr = (iSaveData**)apPtr;
+    Add(*pDataPtr);
+}
+void cSaveDataHandler::AddVoidClass(void *apClass)
+{
+    iSaveData* pData = (iSaveData*)(apClass);
+    Add(pData);
+}
+
+iContainerIterator* cSaveDataHandler::CreateIteratorPtr()
+{
+    return hplNew( cSaveDataIterator, (&m_mapSaveData) );
+}
+
+//------------------------------------------------------------------------
+
+
 }

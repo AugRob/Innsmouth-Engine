@@ -30,342 +30,343 @@
 
 #include "gui/Gui.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// ANIMATION
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// ANIMATION
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cGuiGfxAnimation::AddFrame(int alNum)
-	{
-		mvFrames.push_back(alNum);
-	}
-	void cGuiGfxAnimation::SetType(eGuiGfxAnimationType aType)
-	{
-		mType = aType;
-	}
-	void cGuiGfxAnimation::SetFrameLength(float afLength)
-	{
-		mfFrameLength = afLength;
-	}
-		
-	//-----------------------------------------------------------------------
+void cGuiGfxAnimation::AddFrame(int alNum)
+{
+    mvFrames.push_back(alNum);
+}
+void cGuiGfxAnimation::SetType(eGuiGfxAnimationType aType)
+{
+    mType = aType;
+}
+void cGuiGfxAnimation::SetFrameLength(float afLength)
+{
+    mfFrameLength = afLength;
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	cGuiGfxElement::cGuiGfxElement(cGui* apGui)
-	{
-		mpGui = apGui;
+//-----------------------------------------------------------------------
 
-		/////////////////////////////
-		// Set up vertices
-		mvVtx.resize(4);
+cGuiGfxElement::cGuiGfxElement(cGui* apGui)
+{
+    mpGui = apGui;
 
-		for(int i=0; i<4; ++i)
-		{
-			mvVtx[i].pos =0;
-			mvVtx[i].tex =0;
-			mvVtx[i].col = cColor(1,1);
-		}
+    /////////////////////////////
+    // Set up vertices
+    mvVtx.resize(4);
 
-		//Position
-		mvVtx[1].pos.x = 1;
-		mvVtx[2].pos.x = 1;
-		mvVtx[2].pos.y = 1;
-		mvVtx[3].pos.y = 1;
+    for(int i=0; i<4; ++i)
+        {
+            mvVtx[i].pos =0;
+            mvVtx[i].tex =0;
+            mvVtx[i].col = cColor(1,1);
+        }
 
-		//Texture coordinate
-		mvVtx[1].tex.x = 1;
-		mvVtx[2].tex.x = 1;
-		mvVtx[2].tex.y = 1;
-		mvVtx[3].tex.y = 1;
+    //Position
+    mvVtx[1].pos.x = 1;
+    mvVtx[2].pos.x = 1;
+    mvVtx[2].pos.y = 1;
+    mvVtx[3].pos.y = 1;
 
-		mvImageSize = 0;
+    //Texture coordinate
+    mvVtx[1].tex.x = 1;
+    mvVtx[2].tex.x = 1;
+    mvVtx[2].tex.y = 1;
+    mvVtx[3].tex.y = 1;
 
-		mvOffset =0;
-		mvActiveSize =0;
+    mvImageSize = 0;
 
-		////////////////////////////
-		//Set up textures
-		for(int i=0; i<kMaxGuiTextures; ++i)
-		{
-			mvTextures[i] = NULL;
-			mvImages[i] = NULL;
-		}
+    mvOffset =0;
+    mvActiveSize =0;
 
-		mlTextureNum =0;
-		mlCurrentAnimation = 0;
-		mfCurrentFrame =0;
-		mbForwardAnim = true;
-		mlActiveImage =0;
-		mbAnimationPaused = false;
+    ////////////////////////////
+    //Set up textures
+    for(int i=0; i<kMaxGuiTextures; ++i)
+        {
+            mvTextures[i] = NULL;
+            mvImages[i] = NULL;
+        }
 
-		mbFlushed = false;
-	}
+    mlTextureNum =0;
+    mlCurrentAnimation = 0;
+    mfCurrentFrame =0;
+    mbForwardAnim = true;
+    mlActiveImage =0;
+    mbAnimationPaused = false;
 
-	//---------------------------------------------------
+    mbFlushed = false;
+}
 
-	cGuiGfxElement::~cGuiGfxElement()
-	{
-		STLDeleteAll(mvAnimations);
+//---------------------------------------------------
 
-		////////////////////////////////
-		// Delete all textures / Images
-		if(mvImageBufferVec.size()>0)
-		{
-			for(int i=0; i< (int)mvImageBufferVec.size(); ++i)
-			{
-				//Skip for now, memory might be fucked..
-				//mpGui->GetResources()->GetImageManager()->Destroy(mvImageBufferVec[i]);
-			}
-		}
-		else
-		{
-			for(int i=0; i<mlTextureNum; ++i)
-			{
-				if(mvImages[i])
-				{
-					//Skip for now, memory might be fucked..
-					//mpGui->GetResources()->GetImageManager()->Destroy(mvImages[i]);
-				}
-				else if(mvTextures[i])
-				{
-					mpGui->GetResources()->GetTextureManager()->Destroy(mvTextures[i]);
-				}
-			}
-		}
-	}
+cGuiGfxElement::~cGuiGfxElement()
+{
+    STLDeleteAll(mvAnimations);
 
-	//-----------------------------------------------------------------------
+    ////////////////////////////////
+    // Delete all textures / Images
+    if(mvImageBufferVec.size()>0)
+        {
+            for(int i=0; i< (int)mvImageBufferVec.size(); ++i)
+                {
+                    //Skip for now, memory might be fucked..
+                    //mpGui->GetResources()->GetImageManager()->Destroy(mvImageBufferVec[i]);
+                }
+        }
+    else
+        {
+            for(int i=0; i<mlTextureNum; ++i)
+                {
+                    if(mvImages[i])
+                        {
+                            //Skip for now, memory might be fucked..
+                            //mpGui->GetResources()->GetImageManager()->Destroy(mvImages[i]);
+                        }
+                    else if(mvTextures[i])
+                        {
+                            mpGui->GetResources()->GetTextureManager()->Destroy(mvTextures[i]);
+                        }
+                }
+        }
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	void cGuiGfxElement::Update(float afTimeStep)
-	{
+//-----------------------------------------------------------------------
 
-		//////////////////////////////////////
-		//Update image animations
-		if(mvAnimations.empty() || mbAnimationPaused) return;
-        if(mlCurrentAnimation >= (int)mvAnimations.size()) return;
+void cGuiGfxElement::Update(float afTimeStep)
+{
 
-		cGuiGfxAnimation* pAnim = mvAnimations[mlCurrentAnimation];
+    //////////////////////////////////////
+    //Update image animations
+    if(mvAnimations.empty() || mbAnimationPaused) return;
+    if(mlCurrentAnimation >= (int)mvAnimations.size()) return;
 
-		int lFrame = 0;
-		//////////////////////////////////
-		// Non random animation update
-		if(pAnim->mType != eGuiGfxAnimationType_Random)
-		{
-			mfCurrentFrame += afTimeStep * (1.0f/pAnim->mfFrameLength);
-			lFrame = (int) mfCurrentFrame;
-			if(lFrame >= (int)mvImageBufferVec.size())
-			{
-				//Log("Over max!\n");
-				//Stop at end
-				if(pAnim->mType == eGuiGfxAnimationType_StopAtEnd) 
-				{
-					lFrame = (int)mvImageBufferVec.size()-1;
-					mfCurrentFrame = (float)lFrame;
-				}
-				//Loop
-				else if(pAnim->mType == eGuiGfxAnimationType_Loop)
-				{
-					lFrame =0;
-					mfCurrentFrame = 0;
-				}
-				//Oscillate
-				else if(pAnim->mType == eGuiGfxAnimationType_Oscillate)
-				{
-					lFrame =1;
-					mfCurrentFrame = 1;
-					mbForwardAnim = !mbForwardAnim;
-				}
-			}
-			//Log("Frame %d %f actual_frame: %d size: %d\n",lFrame,mfCurrentFrame,((int)mvImageBufferVec.size()-1) - lFrame,mvImageBufferVec.size());
-			
-			//Oscillate fix
-			if(mbForwardAnim== false && pAnim->mType == eGuiGfxAnimationType_Oscillate)
-			{
-				lFrame = ((int)mvImageBufferVec.size()-1) - lFrame;
-			}
-		}
-		//////////////////////////////////
-		// Random animation update
-		else if(mvImageBufferVec.size() > 1)
-		{
-			float fPrev = mfCurrentFrame;
-			mfCurrentFrame += afTimeStep * (1.0f/pAnim->mfFrameLength);
-			lFrame = (int) mfCurrentFrame;
-			if((int)mfCurrentFrame != (int)fPrev)
-			{
-				int lPrev = (int)fPrev;
-				do
-				{
-					lFrame = cMath::RandRectl(0, (int)mvImageBufferVec.size()-1);
-				}
-				while(lFrame == lPrev);
+    cGuiGfxAnimation* pAnim = mvAnimations[mlCurrentAnimation];
 
-				mfCurrentFrame = (float)lFrame;
-			}
-		}
+    int lFrame = 0;
+    //////////////////////////////////
+    // Non random animation update
+    if(pAnim->mType != eGuiGfxAnimationType_Random)
+        {
+            mfCurrentFrame += afTimeStep * (1.0f/pAnim->mfFrameLength);
+            lFrame = (int) mfCurrentFrame;
+            if(lFrame >= (int)mvImageBufferVec.size())
+                {
+                    //Log("Over max!\n");
+                    //Stop at end
+                    if(pAnim->mType == eGuiGfxAnimationType_StopAtEnd)
+                        {
+                            lFrame = (int)mvImageBufferVec.size()-1;
+                            mfCurrentFrame = (float)lFrame;
+                        }
+                    //Loop
+                    else if(pAnim->mType == eGuiGfxAnimationType_Loop)
+                        {
+                            lFrame =0;
+                            mfCurrentFrame = 0;
+                        }
+                    //Oscillate
+                    else if(pAnim->mType == eGuiGfxAnimationType_Oscillate)
+                        {
+                            lFrame =1;
+                            mfCurrentFrame = 1;
+                            mbForwardAnim = !mbForwardAnim;
+                        }
+                }
+            //Log("Frame %d %f actual_frame: %d size: %d\n",lFrame,mfCurrentFrame,((int)mvImageBufferVec.size()-1) - lFrame,mvImageBufferVec.size());
 
-		//////////////////////////////////
-		// Set new image
-		if(lFrame != mlActiveImage)
-		{
-			mlActiveImage = lFrame;
-			SetImage(mvImageBufferVec[mlActiveImage],0);
-		}
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cGuiGfxElement::AddImage(cResourceImage* apImage)
-	{
-		SetImage(apImage, mlTextureNum);
-		
-		mvActiveSize = GetImageSize();
+            //Oscillate fix
+            if(mbForwardAnim== false && pAnim->mType == eGuiGfxAnimationType_Oscillate)
+                {
+                    lFrame = ((int)mvImageBufferVec.size()-1) - lFrame;
+                }
+        }
+    //////////////////////////////////
+    // Random animation update
+    else if(mvImageBufferVec.size() > 1)
+        {
+            float fPrev = mfCurrentFrame;
+            mfCurrentFrame += afTimeStep * (1.0f/pAnim->mfFrameLength);
+            lFrame = (int) mfCurrentFrame;
+            if((int)mfCurrentFrame != (int)fPrev)
+                {
+                    int lPrev = (int)fPrev;
+                    do
+                        {
+                            lFrame = cMath::RandRectl(0, (int)mvImageBufferVec.size()-1);
+                        }
+                    while(lFrame == lPrev);
 
-		++mlTextureNum;
-	}
+                    mfCurrentFrame = (float)lFrame;
+                }
+        }
 
-	//---------------------------------------------------
+    //////////////////////////////////
+    // Set new image
+    if(lFrame != mlActiveImage)
+        {
+            mlActiveImage = lFrame;
+            SetImage(mvImageBufferVec[mlActiveImage],0);
+        }
+}
 
-	void cGuiGfxElement::AddTexture(iTexture* apTexture)
-	{
-		mvTextures[mlTextureNum] = apTexture;
+//-----------------------------------------------------------------------
 
-		if(mlTextureNum==0)
-		{
-			mvImageSize.x = (float)apTexture->GetWidth();
-			mvImageSize.y = (float)apTexture->GetHeight();
-		}
+void cGuiGfxElement::AddImage(cResourceImage* apImage)
+{
+    SetImage(apImage, mlTextureNum);
 
-		mvActiveSize = GetImageSize();
+    mvActiveSize = GetImageSize();
 
-		++mlTextureNum;
-	}
+    ++mlTextureNum;
+}
 
-	//---------------------------------------------------
+//---------------------------------------------------
 
-	void cGuiGfxElement::AddImageToBuffer(cResourceImage* apImage)
-	{
-		if(mvImageBufferVec.size()==0)
-		{
-			SetImage(apImage,0);
-		}
+void cGuiGfxElement::AddTexture(iTexture* apTexture)
+{
+    mvTextures[mlTextureNum] = apTexture;
 
-		mvImageBufferVec.push_back(apImage);
-	}
+    if(mlTextureNum==0)
+        {
+            mvImageSize.x = (float)apTexture->GetWidth();
+            mvImageSize.y = (float)apTexture->GetHeight();
+        }
 
-	//---------------------------------------------------
+    mvActiveSize = GetImageSize();
 
-	cGuiGfxAnimation* cGuiGfxElement::CreateAnimtion(const tString& asName)
-	{
-		cGuiGfxAnimation *pAnimation = hplNew( cGuiGfxAnimation, () );
-		pAnimation->msName = asName;
+    ++mlTextureNum;
+}
 
-		mvAnimations.push_back(pAnimation);
-        		
-		return pAnimation;
-	}
+//---------------------------------------------------
 
-	//---------------------------------------------------
+void cGuiGfxElement::AddImageToBuffer(cResourceImage* apImage)
+{
+    if(mvImageBufferVec.size()==0)
+        {
+            SetImage(apImage,0);
+        }
 
-	void cGuiGfxElement::PlayAnimation(int alNum)
-	{
-		if(mlCurrentAnimation == alNum) return;
+    mvImageBufferVec.push_back(apImage);
+}
 
-		mlCurrentAnimation = alNum;
+//---------------------------------------------------
 
-		mfCurrentFrame =0;
-		mbForwardAnim = true;
-		mlActiveImage =0;
-		SetImage(mvImageBufferVec[mlActiveImage],0);
-	}
+cGuiGfxAnimation* cGuiGfxElement::CreateAnimtion(const tString& asName)
+{
+    cGuiGfxAnimation *pAnimation = hplNew( cGuiGfxAnimation, () );
+    pAnimation->msName = asName;
 
-	void cGuiGfxElement::SetAnimationTime(float afTime)
-	{
-        if(mlCurrentAnimation>=0)
-			mfCurrentFrame = afTime / mvAnimations[mlCurrentAnimation]->mfFrameLength;
-		else
-			mfCurrentFrame = afTime;
-	}
+    mvAnimations.push_back(pAnimation);
 
-	//---------------------------------------------------
+    return pAnimation;
+}
 
-	void cGuiGfxElement::SetMaterial(iGuiMaterial *apMat)
-	{
-		mpMaterial = apMat;
-	}
+//---------------------------------------------------
 
-	//---------------------------------------------------
+void cGuiGfxElement::PlayAnimation(int alNum)
+{
+    if(mlCurrentAnimation == alNum) return;
 
-	void cGuiGfxElement::SetColor(const cColor &aColor)
-	{
-		for(int i=0; i<4; ++i)	mvVtx[i].col = aColor;
-	}
+    mlCurrentAnimation = alNum;
 
-	//-----------------------------------------------------------------------
+    mfCurrentFrame =0;
+    mbForwardAnim = true;
+    mlActiveImage =0;
+    SetImage(mvImageBufferVec[mlActiveImage],0);
+}
 
-	cVector2f cGuiGfxElement::GetImageSize()
-	{
-		return mvImageSize;
-	}
+void cGuiGfxElement::SetAnimationTime(float afTime)
+{
+    if(mlCurrentAnimation>=0)
+        mfCurrentFrame = afTime / mvAnimations[mlCurrentAnimation]->mfFrameLength;
+    else
+        mfCurrentFrame = afTime;
+}
 
-	//-----------------------------------------------------------------------
+//---------------------------------------------------
 
-	void cGuiGfxElement::Flush()
-	{
-		if(mbFlushed) return;
+void cGuiGfxElement::SetMaterial(iGuiMaterial *apMat)
+{
+    mpMaterial = apMat;
+}
 
-		for(int i=0; i<mlTextureNum; ++i)
-		{
-			if(mvImages[i]) mvImages[i]->GetFrameBitmap()->FlushToTexture();
-		}
-		for(size_t i=0; i < mvImageBufferVec.size(); ++i)
-		{
-			if(mvImageBufferVec[i]) mvImageBufferVec[i]->GetFrameBitmap()->FlushToTexture();
-		}
+//---------------------------------------------------
+
+void cGuiGfxElement::SetColor(const cColor &aColor)
+{
+    for(int i=0; i<4; ++i)	mvVtx[i].col = aColor;
+}
+
+//-----------------------------------------------------------------------
+
+cVector2f cGuiGfxElement::GetImageSize()
+{
+    return mvImageSize;
+}
+
+//-----------------------------------------------------------------------
+
+void cGuiGfxElement::Flush()
+{
+    if(mbFlushed) return;
+
+    for(int i=0; i<mlTextureNum; ++i)
+        {
+            if(mvImages[i]) mvImages[i]->GetFrameBitmap()->FlushToTexture();
+        }
+    for(size_t i=0; i < mvImageBufferVec.size(); ++i)
+        {
+            if(mvImageBufferVec[i]) mvImageBufferVec[i]->GetFrameBitmap()->FlushToTexture();
+        }
 
 
-		mbFlushed = true;
-	}
+    mbFlushed = true;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cGuiGfxElement::SetImage(cResourceImage* apImage, int alNum)
-	{
-		//Set image and texture (for sorting)
-		mvImages[alNum] = apImage;
-		mvTextures[alNum] = apImage->GetTexture();
+void cGuiGfxElement::SetImage(cResourceImage* apImage, int alNum)
+{
+    //Set image and texture (for sorting)
+    mvImages[alNum] = apImage;
+    mvTextures[alNum] = apImage->GetTexture();
 
-		//Get texture coords
-		const tVertexVec& vImageVtx = apImage->GetVertexVec();
-		for(int i=0; i<4; ++i) mvVtx[i].tex = vImageVtx[i].tex;
+    //Get texture coords
+    const tVertexVec& vImageVtx = apImage->GetVertexVec();
+    for(int i=0; i<4; ++i) mvVtx[i].tex = vImageVtx[i].tex;
 
-		if(alNum==0)
-		{
-			mvImageSize.x = (float)apImage->GetWidth();
-			mvImageSize.y = (float)apImage->GetHeight();
-		}
-	}
+    if(alNum==0)
+        {
+            mvImageSize.x = (float)apImage->GetWidth();
+            mvImageSize.y = (float)apImage->GetHeight();
+        }
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
 }

@@ -30,110 +30,111 @@
 #include "scene/SectorVisibility.h"
 #include "scene/PortalContainer.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cLight3DPoint::cLight3DPoint(tString asName, cResources *apResources) : iLight3D(asName,apResources)
-	{
-		mLightType = eLight3DType_Point;
+cLight3DPoint::cLight3DPoint(tString asName, cResources *apResources) : iLight3D(asName,apResources)
+{
+    mLightType = eLight3DType_Point;
 
-		UpdateBoundingVolume();
-	}
+    UpdateBoundingVolume();
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	cSectorVisibilityContainer* cLight3DPoint::CreateSectorVisibility()
-	{
-		return mpWorld3D->GetPortalContainer()->CreateVisibiltyFromBV(GetBoundingVolume());
-	}
-	
-	//-----------------------------------------------------------------------
-	
-	void cLight3DPoint::UpdateBoundingVolume()
-	{
-		mBoundingVolume.SetSize(mfFarAttenuation*2);
-		mBoundingVolume.SetPosition(GetWorldPosition());
-	}
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	bool cLight3DPoint::CreateClipRect(cRect2l &aClipRect, cRenderSettings *apRenderSettings,
-											iLowLevelGraphics *apLowLevelGraphics)
-	{
-		cVector2f vScreenSize = apLowLevelGraphics->GetScreenSize();
-		bool bVisible = cMath::GetClipRectFromBV(aClipRect,*GetBoundingVolume(),
-										apRenderSettings->mpCamera->GetViewMatrix(), 
-										apRenderSettings->mpCamera->GetProjectionMatrix(),
-										apRenderSettings->mpCamera->GetNearClipPlane(), 
-										cVector2l((int)vScreenSize.x,(int)vScreenSize.y));
-		return bVisible;
-	}
+cSectorVisibilityContainer* cLight3DPoint::CreateSectorVisibility()
+{
+    return mpWorld3D->GetPortalContainer()->CreateVisibiltyFromBV(GetBoundingVolume());
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE OBJECT STUFF
-	//////////////////////////////////////////////////////////////////////////
+void cLight3DPoint::UpdateBoundingVolume()
+{
+    mBoundingVolume.SetSize(mfFarAttenuation*2);
+    mBoundingVolume.SetPosition(GetWorldPosition());
+}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+bool cLight3DPoint::CreateClipRect(cRect2l &aClipRect, cRenderSettings *apRenderSettings,
+                                   iLowLevelGraphics *apLowLevelGraphics)
+{
+    cVector2f vScreenSize = apLowLevelGraphics->GetScreenSize();
+    bool bVisible = cMath::GetClipRectFromBV(aClipRect,*GetBoundingVolume(),
+                    apRenderSettings->mpCamera->GetViewMatrix(),
+                    apRenderSettings->mpCamera->GetProjectionMatrix(),
+                    apRenderSettings->mpCamera->GetNearClipPlane(),
+                    cVector2l((int)vScreenSize.x,(int)vScreenSize.y));
+    return bVisible;
+}
 
-	kBeginSerialize(cSaveData_cLight3DPoint,cSaveData_iLight3D)
-	kEndSerialize()
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////
+// SAVE OBJECT STUFF
+//////////////////////////////////////////////////////////////////////////
 
-	iSaveObject* cSaveData_cLight3DPoint::CreateSaveObject(cSaveObjectHandler *apSaveObjectHandler,cGame *apGame)
-	{
-		cWorld3D *pWorld = apGame->GetScene()->GetWorld3D();
+//-----------------------------------------------------------------------
 
-		return pWorld->CreateLightPoint(msName);
-	}
+kBeginSerialize(cSaveData_cLight3DPoint,cSaveData_iLight3D)
+kEndSerialize()
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	int cSaveData_cLight3DPoint::GetSaveCreatePrio()
-	{
-		return 3;
-	}
+iSaveObject* cSaveData_cLight3DPoint::CreateSaveObject(cSaveObjectHandler *apSaveObjectHandler,cGame *apGame)
+{
+    cWorld3D *pWorld = apGame->GetScene()->GetWorld3D();
 
-	//-----------------------------------------------------------------------
+    return pWorld->CreateLightPoint(msName);
+}
 
-	iSaveData* cLight3DPoint::CreateSaveData()
-	{
-		return hplNew( cSaveData_cLight3DPoint, () );
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+int cSaveData_cLight3DPoint::GetSaveCreatePrio()
+{
+    return 3;
+}
 
-	void cLight3DPoint::SaveToSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_SaveToBegin(cLight3DPoint);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+iSaveData* cLight3DPoint::CreateSaveData()
+{
+    return hplNew( cSaveData_cLight3DPoint, () );
+}
 
-	void cLight3DPoint::LoadFromSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_LoadFromBegin(cLight3DPoint);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cLight3DPoint::SaveToSaveData(iSaveData *apSaveData)
+{
+    kSaveData_SaveToBegin(cLight3DPoint);
+}
 
-	void cLight3DPoint::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
-	{
-		kSaveData_SetupBegin(cLight3DPoint);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cLight3DPoint::LoadFromSaveData(iSaveData *apSaveData)
+{
+    kSaveData_LoadFromBegin(cLight3DPoint);
+}
+
+//-----------------------------------------------------------------------
+
+void cLight3DPoint::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
+{
+    kSaveData_SetupBegin(cLight3DPoint);
+}
+
+//-----------------------------------------------------------------------
 
 }

@@ -26,126 +26,129 @@
 #include "resources/FileSearcher.h"
 
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CONSTRUCTORS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMeshManager::cMeshManager(cGraphics* apGraphic,cResources *apResources)
-		: iResourceManager(apResources->GetFileSearcher(), apResources->GetLowLevel(),
-							apResources->GetLowLevelSystem())
-	{
-		mpGraphics = apGraphic;
-		mpResources = apResources;
-	}
+cMeshManager::cMeshManager(cGraphics* apGraphic,cResources *apResources)
+    : iResourceManager(apResources->GetFileSearcher(), apResources->GetLowLevel(),
+                       apResources->GetLowLevelSystem())
+{
+    mpGraphics = apGraphic;
+    mpResources = apResources;
+}
 
-	cMeshManager::~cMeshManager()
-	{
-		DestroyAll();
+cMeshManager::~cMeshManager()
+{
+    DestroyAll();
 
-		Log(" Done with meshes\n");
-	}
+    Log(" Done with meshes\n");
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	//////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	cMesh* cMeshManager::CreateMesh(const tString& asName)
-	{
-		tString sPath;
-		cMesh* pMesh;
-		tString asNewName;
+cMesh* cMeshManager::CreateMesh(const tString& asName)
+{
+    tString sPath;
+    cMesh* pMesh;
+    tString asNewName;
 
-		BeginLoad(asName);
+    BeginLoad(asName);
 
-		asNewName = asName;//cString::SetFileExt(asName,"mesh");
-		
-		//If the file is missing an extension, search for an existing file.
-		if(cString::GetFileExt(asNewName) == "")
-		{
-			bool bFound = false;
-			tStringVec *pTypes = mpResources->GetMeshLoaderHandler()->GetSupportedTypes();
-			for(size_t i=0; i< pTypes->size(); i++)
-			{
-				asNewName = cString::SetFileExt(asNewName, (*pTypes)[i]);
-				tString sPath = mpResources->GetFileSearcher()->GetFilePath(asNewName);
-				if(sPath != "")
-				{
-					bFound = true;
-					break;
-				}
-			}
+    asNewName = asName;//cString::SetFileExt(asName,"mesh");
 
-			if(bFound == false){
-				Error("Couldn't create mesh '%s'\n",asName.c_str());
-				EndLoad();
-				return NULL;
-			}
-		}
+    //If the file is missing an extension, search for an existing file.
+    if(cString::GetFileExt(asNewName) == "")
+        {
+            bool bFound = false;
+            tStringVec *pTypes = mpResources->GetMeshLoaderHandler()->GetSupportedTypes();
+            for(size_t i=0; i< pTypes->size(); i++)
+                {
+                    asNewName = cString::SetFileExt(asNewName, (*pTypes)[i]);
+                    tString sPath = mpResources->GetFileSearcher()->GetFilePath(asNewName);
+                    if(sPath != "")
+                        {
+                            bFound = true;
+                            break;
+                        }
+                }
 
-		pMesh = static_cast<cMesh*>(this->FindLoadedResource(asNewName,sPath));
+            if(bFound == false)
+                {
+                    Error("Couldn't create mesh '%s'\n",asName.c_str());
+                    EndLoad();
+                    return NULL;
+                }
+        }
 
-		if(pMesh==NULL && sPath!="")
-		{
-			pMesh = mpResources->GetMeshLoaderHandler()->LoadMesh(sPath,0);
-			if(pMesh == NULL)
-			{
-				EndLoad();
-				return NULL;
-			}
+    pMesh = static_cast<cMesh*>(this->FindLoadedResource(asNewName,sPath));
 
-			AddResource(pMesh);
-		}
+    if(pMesh==NULL && sPath!="")
+        {
+            pMesh = mpResources->GetMeshLoaderHandler()->LoadMesh(sPath,0);
+            if(pMesh == NULL)
+                {
+                    EndLoad();
+                    return NULL;
+                }
 
-		if(pMesh)pMesh->IncUserCount();
-		else Error("Couldn't create mesh '%s'\n",asNewName.c_str());
-		
-		EndLoad();
-		return pMesh;
-	}
+            AddResource(pMesh);
+        }
 
-	//-----------------------------------------------------------------------
+    if(pMesh)pMesh->IncUserCount();
+    else Error("Couldn't create mesh '%s'\n",asNewName.c_str());
 
-	iResourceBase* cMeshManager::Create(const tString& asName)
-	{
-		return CreateMesh(asName);
-	}
+    EndLoad();
+    return pMesh;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cMeshManager::Unload(iResourceBase* apResource)
-	{
+iResourceBase* cMeshManager::Create(const tString& asName)
+{
+    return CreateMesh(asName);
+}
 
-	}
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void cMeshManager::Destroy(iResourceBase* apResource)
-	{
-		apResource->DecUserCount();
+void cMeshManager::Unload(iResourceBase* apResource)
+{
 
-		if(apResource->HasUsers()==false){
-			RemoveResource(apResource);
-			hplDelete(apResource);
-		}
-	}
+}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void cMeshManager::Destroy(iResourceBase* apResource)
+{
+    apResource->DecUserCount();
 
-	//-----------------------------------------------------------------------
+    if(apResource->HasUsers()==false)
+        {
+            RemoveResource(apResource);
+            hplDelete(apResource);
+        }
+}
 
-	//////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+//////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------
 
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 }

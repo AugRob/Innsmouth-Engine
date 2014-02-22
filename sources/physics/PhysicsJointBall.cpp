@@ -27,91 +27,92 @@
 
 #include "system/LowLevelSystem.h"
 
-namespace hpl {
+namespace hpl
+{
 
-	//////////////////////////////////////////////////////////////////////////
-	// SAVE OBJECT STUFF
-	//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// SAVE OBJECT STUFF
+//////////////////////////////////////////////////////////////////////////
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	kBeginSerialize(cSaveData_iPhysicsJointBall, cSaveData_iPhysicsJoint)
-	kSerializeVar(mfMaxConeAngle, eSerializeType_Float32)
-	kSerializeVar(mfMaxTwistAngle, eSerializeType_Float32)
-	kSerializeVar(mvConePin, eSerializeType_Vector3f)
-	kEndSerialize()
+kBeginSerialize(cSaveData_iPhysicsJointBall, cSaveData_iPhysicsJoint)
+kSerializeVar(mfMaxConeAngle, eSerializeType_Float32)
+kSerializeVar(mfMaxTwistAngle, eSerializeType_Float32)
+kSerializeVar(mvConePin, eSerializeType_Vector3f)
+kEndSerialize()
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iSaveObject* cSaveData_iPhysicsJointBall::CreateSaveObject(cSaveObjectHandler *apSaveObjectHandler,cGame *apGame)
-	{
-		iPhysicsWorld *apWorld = apGame->GetScene()->GetWorld3D()->GetPhysicsWorld();
+iSaveObject* cSaveData_iPhysicsJointBall::CreateSaveObject(cSaveObjectHandler *apSaveObjectHandler,cGame *apGame)
+{
+    iPhysicsWorld *apWorld = apGame->GetScene()->GetWorld3D()->GetPhysicsWorld();
 
-      	cMatrixf mtxChildTemp, mtxParentTemp;
-		
-		iPhysicsBody *pChildBody = static_cast<iPhysicsBody*>(apSaveObjectHandler->Get(mlChildBodyId));
-		if(pChildBody==NULL) return NULL;
+    cMatrixf mtxChildTemp, mtxParentTemp;
 
-		iPhysicsBody *pParentBody = NULL;
-		if(mlParentBodyId>0) pParentBody = static_cast<iPhysicsBody*>(apSaveObjectHandler->Get(mlParentBodyId));
+    iPhysicsBody *pChildBody = static_cast<iPhysicsBody*>(apSaveObjectHandler->Get(mlChildBodyId));
+    if(pChildBody==NULL) return NULL;
 
-        mtxChildTemp = pChildBody->GetLocalMatrix();
-		if(pParentBody) mtxParentTemp = pParentBody->GetLocalMatrix();
-		
-		pChildBody->SetMatrix(m_mtxChildBodySetup);
-		if(pParentBody) pParentBody->SetMatrix(m_mtxParentBodySetup);
+    iPhysicsBody *pParentBody = NULL;
+    if(mlParentBodyId>0) pParentBody = static_cast<iPhysicsBody*>(apSaveObjectHandler->Get(mlParentBodyId));
 
-		iPhysicsJointBall *pJoint = apWorld->CreateJointBall(msName,mvStartPivotPoint,pParentBody,pChildBody);
-		pJoint->SetConeLimits(mvConePin,mfMaxConeAngle, mfMaxTwistAngle);
+    mtxChildTemp = pChildBody->GetLocalMatrix();
+    if(pParentBody) mtxParentTemp = pParentBody->GetLocalMatrix();
 
-		pChildBody->SetMatrix(mtxChildTemp);
-		if(pParentBody) pParentBody->SetMatrix(mtxParentTemp);
+    pChildBody->SetMatrix(m_mtxChildBodySetup);
+    if(pParentBody) pParentBody->SetMatrix(m_mtxParentBodySetup);
 
-		return pJoint;
-	}
+    iPhysicsJointBall *pJoint = apWorld->CreateJointBall(msName,mvStartPivotPoint,pParentBody,pChildBody);
+    pJoint->SetConeLimits(mvConePin,mfMaxConeAngle, mfMaxTwistAngle);
 
-	//-----------------------------------------------------------------------
+    pChildBody->SetMatrix(mtxChildTemp);
+    if(pParentBody) pParentBody->SetMatrix(mtxParentTemp);
 
-	int cSaveData_iPhysicsJointBall::GetSaveCreatePrio()
-	{
-		return 1;
-	}
+    return pJoint;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	iSaveData* iPhysicsJointBall::CreateSaveData()
-	{
-		return hplNew( cSaveData_iPhysicsJointBall, () );
-	}
+int cSaveData_iPhysicsJointBall::GetSaveCreatePrio()
+{
+    return 1;
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-	void iPhysicsJointBall::SaveToSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_SaveToBegin(iPhysicsJointBall);
+iSaveData* iPhysicsJointBall::CreateSaveData()
+{
+    return hplNew( cSaveData_iPhysicsJointBall, () );
+}
 
-		kSaveData_SaveTo(mfMaxConeAngle);
-		kSaveData_SaveTo(mfMaxTwistAngle);
-		kSaveData_SaveTo(mvConePin);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void iPhysicsJointBall::SaveToSaveData(iSaveData *apSaveData)
+{
+    kSaveData_SaveToBegin(iPhysicsJointBall);
 
-	void iPhysicsJointBall::LoadFromSaveData(iSaveData *apSaveData)
-	{
-		kSaveData_LoadFromBegin(iPhysicsJointBall);
+    kSaveData_SaveTo(mfMaxConeAngle);
+    kSaveData_SaveTo(mfMaxTwistAngle);
+    kSaveData_SaveTo(mvConePin);
+}
 
-		kSaveData_LoadFrom(mfMaxConeAngle);
-		kSaveData_LoadFrom(mfMaxTwistAngle);
-		kSaveData_LoadFrom(mvConePin);
-	}
+//-----------------------------------------------------------------------
 
-	//-----------------------------------------------------------------------
+void iPhysicsJointBall::LoadFromSaveData(iSaveData *apSaveData)
+{
+    kSaveData_LoadFromBegin(iPhysicsJointBall);
 
-	void iPhysicsJointBall::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
-	{
-		kSaveData_SetupBegin(iPhysicsJointBall);
-	}
+    kSaveData_LoadFrom(mfMaxConeAngle);
+    kSaveData_LoadFrom(mfMaxTwistAngle);
+    kSaveData_LoadFrom(mvConePin);
+}
 
-	//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+void iPhysicsJointBall::SaveDataSetup(cSaveObjectHandler *apSaveObjectHandler, cGame *apGame)
+{
+    kSaveData_SetupBegin(iPhysicsJointBall);
+}
+
+//-----------------------------------------------------------------------
 }
